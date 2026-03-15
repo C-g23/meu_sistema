@@ -1,0 +1,2339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INSS de Obra — Calculadora de Aferição</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,setPersistence,browserLocalPersistence,browserSessionPersistence}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import{getFirestore,collection,addDoc,getDocs,doc,getDoc,deleteDoc,query,where,serverTimestamp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const _app=initializeApp({
+  apiKey:"AIzaSyA68t2wId_yGoG7y62tacGbMj_7ms4fVss",
+  authDomain:"issqn-sistema-79a80.firebaseapp.com",
+  projectId:"issqn-sistema-79a80",
+  storageBucket:"issqn-sistema-79a80.firebasestorage.app",
+  messagingSenderId:"204613583373",
+  appId:"1:204613583373:web:b01b6bd9fd5bbf657c8b44"
+});
+const _auth=getAuth(_app);
+const _db=getFirestore(_app);
+
+// Expor tudo no window para o script principal
+window._auth=_auth;
+window._db=_db;
+window._fb={
+  signInWithEmailAndPassword:(e,p)=>signInWithEmailAndPassword(_auth,e,p),
+  createUserWithEmailAndPassword:(e,p)=>createUserWithEmailAndPassword(_auth,e,p),
+  signOut:()=>signOut(_auth),
+  sendPasswordResetEmail:(e)=>sendPasswordResetEmail(_auth,e),
+  updatePassword:(p)=>updatePassword(_auth.currentUser,p),
+  reauthAndUpdate:async(old,nw)=>{
+    const cred=EmailAuthProvider.credential(_auth.currentUser.email,old);
+    await reauthenticateWithCredential(_auth.currentUser,cred);
+    return updatePassword(_auth.currentUser,nw);
+  },
+  setPersistence:(lembrar)=>setPersistence(_auth,lembrar?browserLocalPersistence:browserSessionPersistence),
+  db:{collection,addDoc,getDocs,doc,getDoc,deleteDoc,query,where,serverTimestamp},
+};
+
+onAuthStateChanged(_auth,user=>{
+  window._fbUser=user;
+  // Disparar evento para o script principal
+  window.dispatchEvent(new CustomEvent('fbAuthChange',{detail:{user}}));
+});
+
+// Sinalizar pronto
+window._fbReady=true;
+window.dispatchEvent(new Event('fbReady'));
+</script>
+<style>
+:root{
+  --bg:#0f1117;--surface:#181c27;--card:#1e2330;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);
+  --text:#e8eaf0;--muted:#7c8296;--accent:#3b82f6;--accent2:#60a5fa;
+  --green:#10b981;--green2:#34d399;--amber:#f59e0b;--red:#ef4444;--red2:#fca5a5;
+  --serif:'DM Serif Display',serif;--sans:'DM Sans',sans-serif;--r:10px;--r2:6px;
+}
+/* ── Login screen ── */
+.login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:1.5rem}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2.5rem 2rem;width:100%;max-width:380px;display:flex;flex-direction:column;gap:1.25rem}
+.login-title{font-family:var(--serif);font-size:1.6rem;line-height:1.2;text-align:center}
+.login-sub{font-size:12px;color:var(--muted);text-align:center;margin-top:-4px}
+.login-field{display:flex;flex-direction:column;gap:5px}
+.login-field label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.login-field input{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 12px;color:var(--text);font-family:var(--sans);font-size:14px;outline:none;transition:.15s}
+.login-field input:focus{border-color:var(--accent)}
+.login-btn{background:var(--accent);color:#fff;border:none;border-radius:var(--r2);padding:12px;font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;width:100%;transition:.15s;margin-top:.25rem}
+.login-btn:hover{background:#2563eb}
+.login-err{font-size:12px;color:var(--red);text-align:center;min-height:16px}
+.login-toggle{font-size:12px;color:var(--muted);text-align:center;cursor:pointer}
+.login-toggle span{color:var(--accent2);text-decoration:underline;cursor:pointer}
+/* ── Painel lateral — clientes ── */
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:none}
+.panel-overlay.on{display:block}
+.client-panel{position:fixed;top:0;right:-420px;width:420px;height:100vh;background:var(--surface);border-left:1px solid var(--border);z-index:501;display:flex;flex-direction:column;transition:right .3s ease;overflow:hidden}
+.client-panel.on{right:0}
+.cp-header{padding:1.25rem 1.25rem .875rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.cp-title{font-family:var(--serif);font-size:1.1rem}
+.cp-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:4px 8px;border-radius:4px}
+.cp-close:hover{background:var(--card);color:var(--text)}
+.cp-tabs{display:flex;gap:4px;padding:.75rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0}
+.cp-tab{flex:1;padding:7px;text-align:center;font-size:12px;font-weight:500;border-radius:var(--r2);border:none;background:none;color:var(--muted);cursor:pointer;transition:.15s}
+.cp-tab.on{background:rgba(59,130,246,.12);color:var(--accent2)}
+.cp-body{flex:1;overflow-y:auto;padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.75rem}
+/* Cliente card */
+.cli-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:.875rem;cursor:pointer;transition:.15s}
+.cli-card:hover{border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.04)}
+.cli-name{font-weight:600;font-size:13px;margin-bottom:3px}
+.cli-meta{font-size:11px;color:var(--muted)}
+.cli-actions{display:flex;gap:6px;margin-top:.625rem}
+.cli-btn{font-size:11px;padding:4px 10px;border-radius:var(--r2);border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:.15s}
+.cli-btn:hover{background:var(--card);color:var(--text)}
+.cli-btn.danger:hover{border-color:rgba(239,68,68,.4);color:var(--red)}
+.cli-btn.primary{border-color:rgba(59,130,246,.3);color:var(--accent2)}
+.cli-btn.primary:hover{background:rgba(59,130,246,.1)}
+/* Formulário novo cliente */
+.cp-form{display:flex;flex-direction:column;gap:.75rem}
+.cp-row{display:grid;grid-template-columns:1fr 1fr;gap:.625rem}
+.cp-row.full{grid-template-columns:1fr}
+.cp-field{display:flex;flex-direction:column;gap:4px}
+.cp-field label{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.cp-field input,.cp-field select{background:var(--card);border:1px solid var(--border2);border-radius:var(--r2);padding:8px 10px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;transition:.15s}
+.cp-field input:focus,.cp-field select:focus{border-color:var(--accent)}
+.cp-save{background:var(--accent);color:#fff;border:none;border-radius:var(--r2);padding:10px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;width:100%;transition:.15s;margin-top:.25rem}
+.cp-save:hover{background:#2563eb}
+.cp-msg{font-size:11px;text-align:center;min-height:14px;color:var(--green2)}
+/* User info na sidebar */
+.user-bar{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.12);border-radius:var(--r2);font-size:12px}
+.user-avatar{width:26px;height:26px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.user-email{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+.user-out{background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;padding:3px 6px;border-radius:4px;transition:.15s}
+.user-out:hover{color:var(--red)}
+/* Card contratante */
+.contratante-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
+.contratante-grid .full{grid-column:1/-1}
+@media(max-width:780px){.contratante-grid{grid-template-columns:1fr 1fr}.contratante-grid .full{grid-column:1/-1}}
+/* Notificação de salvamento */
+.save-toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--green);color:#fff;padding:.875rem 1.25rem;border-radius:var(--r);font-size:13px;font-weight:500;z-index:800;transform:translateY(80px);opacity:0;transition:.3s;pointer-events:none}
+.save-toast.show{transform:translateY(0);opacity:1}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh;transition:grid-template-columns .25s ease}
+.app.sidebar-collapsed{grid-template-columns:0px 1fr}
+@media(max-width:900px){.app{grid-template-columns:1fr}}
+/* Sidebar */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.75rem 1.1rem;display:flex;flex-direction:column;gap:1.5rem;position:sticky;top:0;height:100vh;overflow-y:auto;overflow-x:hidden;transition:padding .25s ease,opacity .25s ease;width:240px}
+.app.sidebar-collapsed .sidebar{padding:0;opacity:0;pointer-events:none}
+@media(max-width:900px){.sidebar{display:none}}
+/* Botão toggle sidebar */
+.sidebar-toggle{position:fixed;left:240px;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;width:16px;height:48px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:left .25s ease,background .15s;padding:0}
+.sidebar-toggle:hover{background:var(--card);color:var(--text)}
+.sidebar-toggle svg{transition:transform .25s ease}
+.app.sidebar-collapsed .sidebar-toggle{left:0}
+.app.sidebar-collapsed .sidebar-toggle svg{transform:scaleX(-1)}
+@media(max-width:900px){.sidebar-toggle{display:none}}
+.logo-title{font-family:var(--serif);font-size:1.3rem;line-height:1.2}
+.logo-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+.logo-badge{display:inline-block;margin-top:6px;font-size:10px;padding:2px 8px;background:rgba(59,130,246,.15);color:var(--accent2);border-radius:99px;border:1px solid rgba(59,130,246,.2)}
+.nav-group{display:flex;flex-direction:column;gap:2px}
+.nav-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:5px;padding-left:8px}
+.nav-btn{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--r2);border:none;background:none;color:var(--muted);cursor:pointer;font-family:var(--sans);font-size:12.5px;width:100%;text-align:left;transition:.15s}
+.nav-btn:hover{background:var(--card);color:var(--text)}
+.nav-btn.active{background:rgba(59,130,246,.12);color:var(--accent2);border:1px solid rgba(59,130,246,.2)}
+.ni{width:14px;height:14px;flex-shrink:0}
+.sb-info{font-size:11px;color:var(--muted);line-height:1.9;margin-top:auto}
+.sb-info strong{color:rgba(255,255,255,.6)}
+/* Main */
+.main{padding:1.5rem;display:flex;flex-direction:column;gap:1.25rem;max-width:1140px}
+@media(max-width:600px){.main{padding:1rem}}
+/* Etapa header */
+.etapa-header{display:flex;align-items:center;gap:10px;margin-bottom:.5rem}
+.etapa-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.etapa-num.e1{background:rgba(59,130,246,.2);color:var(--accent2);border:1px solid rgba(59,130,246,.3)}
+.etapa-num.e2{background:rgba(16,185,129,.15);color:var(--green2);border:1px solid rgba(16,185,129,.25)}
+.etapa-num.e3{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.etapa-title{font-family:var(--serif);font-size:1.2rem}
+.etapa-desc{font-size:11px;color:var(--muted)}
+/* Grid */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+@media(max-width:780px){.grid-2{grid-template-columns:1fr}}
+@media(max-width:680px){.grid-3{grid-template-columns:1fr 1fr}}
+/* Card */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.1rem 1.25rem}
+.card-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.875rem}
+/* Fields */
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:.75rem}
+.field:last-child{margin-bottom:0}
+.field label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:6px}
+.field input,.field select{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:8px 11px;color:var(--text);font-family:var(--sans);font-size:13px;width:100%;transition:.15s;-webkit-appearance:none}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+.field input::placeholder{color:var(--muted)}
+.field input.computed{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.2);color:var(--accent2);font-weight:500;cursor:default}
+.field input.param-override{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.04)}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237c8296' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px}
+.field select option{background:var(--card)}
+/* ── Comparativo A/B ────────────────────────────────── */
+.ab-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.ab-dot.a{background:var(--accent2)}
+.ab-dot.b{background:var(--amber)}
+.ab-header{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:.875rem;align-items:center}
+.ab-badge{display:flex;align-items:center;padding:6px 10px;border-radius:var(--r2);font-size:11px;font-weight:500}
+.ab-badge.ab-a{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--accent2)}
+.ab-badge.ab-b{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:var(--amber)}
+.ab-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:start;padding:.75rem 0;border-bottom:1px solid var(--border)}
+.ab-row-label{font-size:12px;color:var(--text);padding-right:8px}
+.ab-cell{display:flex;flex-direction:column;gap:4px;position:relative}
+.ab-inp{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:7px 10px;color:var(--text);font-family:var(--sans);font-size:13px;width:100%;font-variant-numeric:tabular-nums}
+.ab-inp.a-inp{background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.2);color:var(--accent2);font-weight:500}
+.ab-inp.b-inp{border-color:rgba(245,158,11,.25)}
+.ab-inp.b-inp:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+.ab-auto-pill{font-size:9px;padding:1px 6px;border-radius:99px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green2);align-self:flex-start;width:fit-content}
+.ab-summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.ab-sum-block{border-radius:var(--r2);padding:8px 10px}
+.ab-sum-block.a{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18)}
+.ab-sum-block.b{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.18)}
+.ab-sum-row{display:flex;justify-content:space-between;font-size:11px;line-height:1.8}
+.ab-sum-row span{color:var(--muted)}
+.ab-sum-row strong{font-variant-numeric:tabular-nums}
+.ab-sum-block.a strong{color:var(--accent2)}
+.ab-sum-block.b strong{color:var(--amber)}
+.ab-card-a{border-top:2px solid rgba(59,130,246,.35)}
+.ab-card-b{border-top:2px solid rgba(245,158,11,.4)}
+.ab-result-header{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.25rem}
+.ab-result-badge{display:flex;align-items:center;padding:5px 12px;border-radius:99px;font-size:11.5px;font-weight:500}
+.ab-result-badge.a{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--accent2)}
+.ab-result-badge.b{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:var(--amber)}
+/* Tabela comparativo */
+.comp-grid{display:grid;grid-template-columns:1fr 90px 90px 100px;gap:0}
+.comp-col-head{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;padding:6px 8px;text-align:right;border-bottom:1px solid var(--border2)}
+.comp-col-head.a{color:var(--accent2)}.comp-col-head.b{color:var(--amber)}.comp-col-head.diff{color:var(--muted)}
+.comp-row-label{font-size:12px;color:var(--muted);padding:7px 8px 7px 0;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.comp-val{font-size:12px;font-weight:500;text-align:right;padding:7px 8px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+.comp-val.diff{color:var(--muted)}
+.comp-val.diff.pos{color:var(--red2)}.comp-val.diff.neg{color:var(--green2)}
+@media(max-width:780px){
+  .ab-header,.ab-row,.ab-summary-grid{grid-template-columns:1fr}
+  .comp-grid{grid-template-columns:1fr 80px 80px 80px}
+}
+
+/* Área resultante display */
+.area-res-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px 12px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.18);border-radius:var(--r2);margin-top:.5rem}
+.area-res-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--accent2)}
+.area-res-val{font-size:18px;font-weight:600;color:var(--accent2);font-variant-numeric:tabular-nums}
+/* Competência selector */
+.comp-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;padding:.875rem 1.1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r)}
+.comp-row label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);white-space:nowrap}
+.comp-select{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:7px 26px 7px 11px;color:var(--text);font-family:var(--sans);font-size:13px;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237c8296' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:.15s;min-width:200px}
+.comp-select:focus{outline:none;border-color:var(--accent)}
+.cbadge{font-size:10.5px;padding:3px 10px;border-radius:99px;font-weight:500}
+.cbadge.ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);color:var(--green2)}
+.cbadge.manual{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--amber)}
+/* Toggle concreto */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);gap:8px;margin-bottom:.75rem}
+.tog{padding:4px 13px;border-radius:5px;border:1px solid var(--border);background:none;color:var(--muted);font-family:var(--sans);font-size:11px;font-weight:500;cursor:pointer;transition:.15s}
+.tog.on-yes{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.35);color:var(--green2)}
+.tog.on-no{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:var(--amber)}
+/* Tabs para etapa 2/3 */
+.tabs-pills{display:flex;gap:3px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:3px}
+.tab-pill{padding:6px 16px;border-radius:7px;border:none;background:none;color:var(--muted);cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:500;transition:.15s;white-space:nowrap}
+.tab-pill.on{background:var(--accent);color:#fff}
+/* Calc table */
+.ct{width:100%;border-collapse:collapse}
+.ct tr{border-bottom:1px solid var(--border)}
+.ct tr:last-child{border-bottom:none}
+.ct td{padding:8px 0;font-size:12.5px;vertical-align:middle}
+.ct td:first-child{color:var(--muted);padding-right:8px}
+.ct td:last-child{text-align:right;font-weight:500;font-variant-numeric:tabular-nums}
+.ct .vb{color:var(--accent2)}.ct .vg{color:var(--green2)}.ct .va{color:var(--amber)}.ct .vr{color:var(--red2)}
+.ct .sep td{border-top:1px solid var(--border2)!important}
+.ct .bold td{font-weight:600}.ct .bold td:first-child{color:var(--text)}
+/* Stats */
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-top:.875rem}
+@media(max-width:500px){.stats{grid-template-columns:1fr 1fr}}
+.stat{background:var(--surface);border-radius:var(--r2);padding:.875rem}
+.slbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:3px}
+.sval{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.sval.blue{color:var(--accent2)}.sval.amber{color:var(--amber)}.sval.red{color:var(--red2)}.sval.green{color:var(--green2)}
+/* Result main */
+.res-main{border-radius:var(--r);padding:1.1rem 1.25rem;margin-top:.875rem}
+.res-main.green-style{border:1px solid rgba(16,185,129,.25);background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(16,185,129,.03))}
+.res-main.red-style{border:1px solid rgba(239,68,68,.3);background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(239,68,68,.03))}
+.rl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}
+.rv{font-size:28px;font-weight:600;font-variant-numeric:tabular-nums;font-family:var(--serif)}
+.rv.green{color:var(--green2)}.rv.red{color:var(--red2)}
+.rs{font-size:11px;color:var(--muted);margin-top:3px}
+/* RMT source badge */
+.rmt-source{display:flex;align-items:center;gap:8px;padding:8px 11px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:var(--r2);margin-bottom:.875rem;font-size:12px;color:var(--green2)}
+/* Monthly rows — tabela expandida */
+.mrow-header{display:grid;grid-template-columns:120px 1fr 70px 100px 90px 90px 90px 90px 90px 32px;gap:4px;margin-bottom:5px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.mrow-header span{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.mrow{display:grid;grid-template-columns:120px 1fr 70px 100px 90px 90px 90px 90px 90px 32px;gap:4px;align-items:center;margin-bottom:4px}
+.mrow input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:6px 8px;color:var(--text);font-family:var(--sans);font-size:12px}
+.mrow .computed-cell{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:var(--r2);padding:6px 8px;font-size:12px;color:var(--accent2);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+.mrow .cpp-cell{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:var(--r2);padding:6px 8px;font-size:12px;color:var(--amber);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+.mrow .total-cell{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:var(--r2);padding:6px 8px;font-size:12px;color:var(--red2);font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:1100px){
+  .mrow-header{grid-template-columns:100px 1fr 60px 90px 80px 0 0 0 80px 32px}
+  .mrow-header span:nth-child(6),.mrow-header span:nth-child(7),.mrow-header span:nth-child(8){display:none}
+  .mrow{grid-template-columns:100px 1fr 60px 90px 80px 0 0 0 80px 32px}
+  .mrow>*:nth-child(6),.mrow>*:nth-child(7),.mrow>*:nth-child(8){display:none}
+}
+@media(max-width:800px){
+  .mrow-header{grid-template-columns:1fr 1fr 60px auto 32px;gap:4px}
+  .mrow-header span:nth-child(3),.mrow-header span:nth-child(4),.mrow-header span:nth-child(5),.mrow-header span:nth-child(6),.mrow-header span:nth-child(7),.mrow-header span:nth-child(8),.mrow-header span:nth-child(9){display:none}
+  .mrow{grid-template-columns:1fr 1fr 60px auto 32px}
+  .mrow>*:nth-child(3),.mrow>*:nth-child(4),.mrow>*:nth-child(5),.mrow>*:nth-child(6),.mrow>*:nth-child(7),.mrow>*:nth-child(8),.mrow>*:nth-child(9){display:none}
+}
+
+.btn-del{background:none;border:1px solid var(--border);border-radius:var(--r2);padding:7px 9px;cursor:pointer;color:var(--muted);font-size:14px;transition:.15s;line-height:1}
+.btn-del:hover{border-color:var(--red);color:var(--red)}
+.btn-add{width:100%;padding:8px;border:1px dashed var(--border2);border-radius:var(--r2);background:none;color:var(--muted);font-family:var(--sans);font-size:12px;cursor:pointer;transition:.15s;margin-top:4px}
+.btn-add:hover{border-color:var(--accent);color:var(--accent2)}
+/* Alerts */
+.alert{padding:8px 12px;border-radius:var(--r2);font-size:12px;line-height:1.5}
+.alert.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:var(--amber)}
+.alert.info{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:var(--accent2)}
+.alert.error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--red2)}
+.alert.success{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:var(--green2)}
+/* Badge */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10.5px;font-weight:500;vertical-align:middle}
+.bb{background:rgba(59,130,246,.15);color:var(--accent2);border:1px solid rgba(59,130,246,.2)}
+.ba{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+/* VAU btn */
+.vau-row{display:flex;gap:8px;align-items:flex-end}
+.vau-row .field{flex:1;margin:0}
+.vau-btn{padding:8px 11px;border-radius:var(--r2);background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:var(--green2);font-size:11px;font-family:var(--sans);white-space:nowrap;cursor:pointer;transition:.15s;line-height:1.5}
+.vau-btn:hover{background:rgba(16,185,129,.18)}
+/* Eco */
+.eco-block{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.875rem}
+@media(max-width:560px){.eco-block{grid-template-columns:1fr}}
+.eco-card{border-radius:var(--r2);padding:.875rem;border:1px solid var(--border)}
+.eco-card.ec-eco{background:rgba(16,185,129,.06);border-color:rgba(16,185,129,.2)}
+.divider{height:1px;background:var(--border);margin:.75rem 0}
+/* Page */
+.step{display:none;flex-direction:column;gap:1.25rem}
+.step.on{display:flex}
+/* Stepper sidebar */
+.step-nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r2);cursor:pointer;transition:.15s;border:none;background:none;width:100%;text-align:left}
+.step-nav-item:hover .step-nav-label{color:var(--text)}
+.step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:.2s}
+.step-nav-label{font-size:12.5px;color:var(--muted);transition:.15s;font-family:var(--sans)}
+.step-nav-item.done .step-num{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.3);color:var(--green2)}
+.step-nav-item.done .step-nav-label{color:var(--muted)}
+.step-nav-item.current .step-num{background:rgba(59,130,246,.2);border-color:rgba(59,130,246,.4);color:var(--accent2)}
+.step-nav-item.current .step-nav-label{color:var(--accent2);font-weight:500}
+.step-connector{width:1px;height:16px;background:var(--border);margin-left:20px}
+/* Botões de navegação entre etapas */
+.step-footer{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-top:.5rem;gap:1rem;flex-wrap:wrap}
+.btn-step{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:var(--r2);border:none;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:.15s}
+.btn-step.next{background:var(--accent);color:#fff}
+.btn-step.next:hover{background:#2563eb}
+.btn-step.prev{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+.btn-step.prev:hover{background:var(--card);color:var(--text)}
+.step-progress{display:flex;gap:6px;align-items:center}
+.step-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:.2s}
+.step-dot.done{background:var(--green2)}
+.step-dot.current{background:var(--accent);width:18px;border-radius:4px}
+/* Mobile */
+.mob-h{display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:.75rem 1.1rem;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+@media(max-width:900px){.mob-h{display:flex}}
+/* Animations */
+@keyframes fup{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.etapa-result.on>*{animation:fup .2s ease both}
+.etapa-result.on>*:nth-child(1){animation-delay:.02s}
+.etapa-result.on>*:nth-child(2){animation-delay:.06s}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+@media print{
+  body{background:#fff;color:#111;font-size:12px}
+  .sidebar,.mob-h,.tabs-pills,.btn-add,.btn-del,.vau-btn,.tog,.comp-row,.step-footer,
+  .nav-btn,.btn-step,.conc-msg,.vau-btn,.ab-auto-pill,.print-hide{display:none!important}
+  .app{grid-template-columns:1fr}
+  .step{display:flex!important;flex-direction:column;gap:.75rem;page-break-inside:avoid}
+  .card{background:#fff!important;color:#111!important;border:1px solid #d1d5db!important;border-radius:4px;padding:.875rem!important;break-inside:avoid}
+  .ab-card-a,.ab-card-b{border-top:2px solid #666!important}
+  .card-title{color:#666!important;margin-bottom:.5rem!important}
+  .ct td{padding:5px 0!important;border-color:#e5e7eb!important}
+  .ct td:first-child{color:#555!important}
+  .rv,.sval,.sv{color:#111!important}
+  .rv.green,.rv.red,.sval.green,.sval.blue,.sval.amber,.sval.red{color:#111!important}
+  .res-main{border:1px solid #d1d5db!important;background:#f9fafb!important;padding:.75rem!important}
+  .stat{background:#f3f4f6!important;border-radius:4px}
+  .print-report-header{display:block!important}
+  .grid-2{grid-template-columns:1fr 1fr!important}
+  .comp-grid{grid-template-columns:1fr 90px 90px 100px!important}
+  @page{margin:1.5cm;size:A4}
+}
+.print-report-header{display:none}
+</style>
+</head>
+<body>
+
+<!-- ── TELA DE LOGIN ── -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div>
+      <div class="login-title">INSS de Obra</div>
+      <div class="login-sub">Calculadora de Aferição Indireta</div>
+    </div>
+    <div class="login-field">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);cursor:pointer">
+        <input type="checkbox" id="login-lembrar" style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer">
+        Lembrar meu acesso
+      </label>
+      <span id="link-reset-senha" style="font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline">Esqueci minha senha</span>
+    </div>
+    <div class="login-err" id="login-err"></div>
+    <button class="login-btn" id="login-btn-main">Entrar</button>
+    <div class="login-toggle" id="login-toggle">Não tem conta? <span id="toggle-login-mode">Criar conta</span></div>
+  </div>
+</div>
+
+<!-- ── PAINEL DE CLIENTES ── -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
+<div class="client-panel" id="client-panel">
+  <div class="cp-header">
+    <div class="cp-title">Clientes &amp; Relatórios</div>
+    <button class="cp-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="cp-tabs">
+    <button class="cp-tab on" id="tab-clientes" onclick="switchPanelTab('clientes')">Clientes</button>
+    <button class="cp-tab" id="tab-relatorios" onclick="switchPanelTab('relatorios')">Relatórios salvos</button>
+    <button class="cp-tab" id="tab-novo" onclick="switchPanelTab('novo')">+ Novo cliente</button>
+  </div>
+  <div class="cp-body" id="cp-body">
+    <div style="text-align:center;color:var(--muted);font-size:12px;padding:2rem 0">Carregando...</div>
+  </div>
+</div>
+
+<!-- ── TOAST DE SALVAMENTO ── -->
+<div class="save-toast" id="save-toast">✓ Relatório salvo com sucesso</div>
+
+
+<div class="mob-h">
+  <span style="font-family:var(--serif);font-size:1.05rem">INSS de Obra</span>
+  <div style="display:flex;gap:6px">
+    <button class="btn-step prev" style="padding:6px 14px;font-size:12px" onclick="goStep(etapaAtual-1)" id="mob-prev">← Voltar</button>
+    <button class="btn-step next" style="padding:6px 14px;font-size:12px" onclick="goStep(etapaAtual+1)" id="mob-next">Próxima →</button>
+  </div>
+</div>
+</div><!-- /mob-h -->
+
+<div class="app" id="app">
+<button class="sidebar-toggle" id="sidebar-toggle" onclick="toggleSidebar()" title="Ocultar/mostrar menu">
+  <svg width="10" height="14" viewBox="0 0 10 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7 1L1 7L7 13"/>
+  </svg>
+</button>
+<aside class="sidebar">
+  <div>
+    <div class="logo-title">INSS<br>de Obra</div>
+    <div class="logo-sub">Calculadora de Aferição</div>
+    <span class="logo-badge">v6.0 · Mar/2026</span>
+  </div>
+
+  <div class="user-bar" id="user-bar">
+    <div class="user-avatar" id="user-avatar">?</div>
+    <span class="user-email" id="user-email">—</span>
+    <button class="user-out" onclick="abrirModalSenha()" title="Alterar senha" style="margin-right:2px">🔑</button>
+    <button class="user-out" id="btn-logout" title="Sair">Sair</button>
+  </div>
+  <!-- Aviso para usuários que só têm Google (sem senha) -->
+  <div id="senha-def-bar" style="display:none;align-items:center;gap:8px;padding:8px 10px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:var(--r2);font-size:11px">
+    <span style="color:var(--amber);flex:1">⚠️ Defina uma senha para acessar sem Google</span>
+    <button onclick="abrirModalSenha()" style="background:var(--amber);color:#000;border:none;border-radius:4px;padding:3px 8px;font-size:10px;font-weight:600;cursor:pointer">Definir</button>
+  </div>
+
+  <nav style="display:flex;flex-direction:column;gap:0">
+    <div class="nav-label" style="margin-bottom:8px">Etapas</div>
+
+    <button class="step-nav-item current" id="snav-1" onclick="goStep(1)">
+      <span class="step-num" id="snum-1">1</span>
+      <span class="step-nav-label">Dados e parâmetros</span>
+    </button>
+    <div class="step-connector"></div>
+    <button class="step-nav-item" id="snav-2" onclick="goStep(2)">
+      <span class="step-num" id="snum-2">2</span>
+      <span class="step-nav-label">Aferição sem vinculação</span>
+    </button>
+    <div class="step-connector"></div>
+    <button class="step-nav-item" id="snav-3" onclick="goStep(3)">
+      <span class="step-num" id="snum-3">3</span>
+      <span class="step-nav-label">Aferição com vinculação</span>
+    </button>
+  </nav>
+
+  <nav class="nav-group" style="margin-top:.5rem">
+    <div class="nav-label">Ferramentas</div>
+    <button class="nav-btn" onclick="openPanel()">
+      <svg class="ni" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Clientes &amp; Relatórios
+    </button>
+    <button class="nav-btn" onclick="salvarRelatorio()">
+      <svg class="ni" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salvar simulação
+    </button>
+    <button class="nav-btn" onclick="window.open('https://cav.receita.fazenda.gov.br/ecac/Aplicacao.aspx?id=10031&origem=menu','_blank')">
+      <svg class="ni" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>Tabela VAU oficial
+    </button>
+    <button class="nav-btn" onclick="gerarRelatorio()">
+      <svg class="ni" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimir relatório
+    </button>
+    <button class="nav-btn" onclick="limpar()">
+      <svg class="ni" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Limpar campos
+    </button>
+  </nav>
+
+  <div class="sb-info">
+    <div>INSS: <strong>36,80%</strong></div>
+    <div>CPP Patronal: <strong>20,00%</strong></div>
+    <div>FA: <strong>50,00%</strong></div>
+    <div id="sb-comp">VAU: <strong>mar/2026</strong></div>
+    <div style="margin-top:6px;font-size:10px;opacity:.4;line-height:1.6">Parâmetros editáveis na etapa 1.</div>
+  </div>
+</aside>
+
+<main class="main">
+
+<!-- CABEÇALHO DO RELATÓRIO (visível só no print) -->
+<div class="print-report-header" style="margin-bottom:1.5rem;border-bottom:2px solid #111;padding-bottom:1rem">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.75rem">
+    <div>
+      <div style="font-size:20px;font-weight:700;font-family:serif">RELATÓRIO DE AFERIÇÃO INDIRETA DE OBRAS</div>
+      <div style="font-size:12px;color:#555;margin-top:2px">Sistema de Cálculo INSS de Obra — IN RFB nº 2.021/2021</div>
+    </div>
+    <div style="text-align:right;font-size:11px;color:#555">
+      <div>Emitido em: <strong id="print-data">—</strong></div>
+      <div>Competência: <strong id="print-comp">—</strong></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;background:#f3f4f6;padding:10px 12px;border-radius:4px;font-size:11px">
+    <div><span style="color:#666">UF:</span> <strong id="print-uf">—</strong></div>
+    <div><span style="color:#666">Destinação:</span> <strong id="print-dest">—</strong></div>
+    <div><span style="color:#666">Tipo construtivo:</span> <strong id="print-tipo">—</strong></div>
+    <div><span style="color:#666">Área principal:</span> <strong id="print-ap">—</strong></div>
+    <div><span style="color:#666">Área resultante:</span> <strong id="print-ares">—</strong></div>
+    <div><span style="color:#666">VAU:</span> <strong id="print-vau">—</strong></div>
+  </div>
+</div>
+
+<!-- ETAPA 1 -->
+<div id="step-1" class="step">
+  <div class="etapa-header">
+    <span class="etapa-num e1">1</span>
+    <div>
+      <div class="etapa-title">Dados e parâmetros</div>
+      <div class="etapa-desc">Preencha os dados da obra. Os parâmetros são calculados automaticamente mas podem ser editados.</div>
+    </div>
+  </div>
+
+<!-- Dados do Contratante -->
+<div class="card" style="border-color:rgba(245,158,11,.2)">
+  <div class="card-title" style="color:var(--amber);font-family:var(--serif);font-size:1rem;text-transform:none;letter-spacing:0">Dados do Contratante</div>
+  <div class="contratante-grid">
+    <div class="cp-field">
+      <label>Nome do contratante *</label>
+      <input type="text" id="c_nome" placeholder="Nome completo">
+    </div>
+    <div class="cp-field">
+      <label>CPF / CNPJ</label>
+      <input type="text" id="c_cpfcnpj" placeholder="000.000.000-00">
+    </div>
+    <div class="cp-field">
+      <label>Data da simulação</label>
+      <input type="text" id="c_data" placeholder="dd/mm/aaaa">
+    </div>
+    <div class="cp-field">
+      <label>Cidade</label>
+      <input type="text" id="c_cidade" placeholder="Cidade">
+    </div>
+    <div class="cp-field">
+      <label>Identificação / Processo</label>
+      <input type="text" id="c_processo" placeholder="Nº processo ou identificação">
+    </div>
+    <div class="cp-field">
+      <label>Endereço da obra</label>
+      <input type="text" id="c_endereco" placeholder="Logradouro, número, bairro">
+    </div>
+    <div class="full" style="display:flex;gap:8px;align-items:center;margin-top:.25rem">
+      <button class="cp-save" style="flex:1;max-width:200px" onclick="salvarContratante()">Salvar como cliente</button>
+      <button class="cli-btn primary" onclick="openPanel()" style="white-space:nowrap">Carregar cliente ↗</button>
+      <span style="font-size:11px;color:var(--green2);flex:1" id="c_saved_msg"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Competência -->
+<div class="comp-row">
+  <label>Competência (mês/ano)</label>
+  <select class="comp-select" id="comp" onchange="onCompChange()"></select>
+  <span id="comp-badge" class="cbadge ok">Dados disponíveis ✓</span>
+  <span style="font-size:11px;color:var(--muted)">
+    VAU atualizado mensalmente pela RFB.
+    <a href="https://cav.receita.fazenda.gov.br/ecac/Aplicacao.aspx?id=10031&origem=menu" target="_blank" style="color:var(--accent2);text-decoration:none">Ver tabela oficial ↗</a>
+  </span>
+</div>
+
+<!-- Grid principal Etapa 1 -->
+<div class="grid-2">
+
+  <!-- COLUNA A: Identificação + Áreas + VAU + Concreto -->
+  <div style="display:flex;flex-direction:column;gap:1.1rem">
+
+    <div class="card">
+      <div class="card-title">Identificação da obra</div>
+      <div class="field">
+        <label>UF</label>
+        <select id="uf" onchange="onUF()">
+          <option value="">Selecione</option>
+          <option>AC</option><option>AL</option><option>AM</option><option>AP</option>
+          <option>BA</option><option>CE</option><option>DF</option><option>ES</option>
+          <option>GO</option><option>MA</option><option>MG</option><option>MS</option>
+          <option>MT</option><option>PA</option><option>PB</option><option>PE</option>
+          <option>PI</option><option>PR</option><option>RJ</option><option>RN</option>
+          <option>RO</option><option>RR</option><option>RS</option><option>SC</option>
+          <option>SE</option><option>SP</option><option>TO</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Destinação</label>
+        <select id="dest" onchange="onDest()">
+          <option value="">Selecione</option>
+          <option value="res_uni">Residencial Unifamiliar</option>
+          <option value="res_multi">Residencial Multifamiliar</option>
+          <option value="comercial">Comercial Salas e Lojas</option>
+          <option value="garagens">Edifício de Garagens</option>
+          <option value="galpao">Galpão Industrial</option>
+          <option value="casa_pop">Casa Popular</option>
+          <option value="conj_hab">Conjunto Habitacional Popular</option>
+        </select>
+      </div>
+      <div class="field" style="margin:0">
+        <label>Tipo construtivo</label>
+        <select id="tipo" onchange="onTipo()">
+          <option value="alvenaria">Alvenaria</option>
+          <option value="madeira">Madeira</option>
+          <option value="mista">Mista</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Áreas (m²)</div>
+      <div class="field"><label>Área construída — principal</label><input type="number" id="ap" placeholder="0,00" min="0" step="0.01" oninput="onAreas()"></div>
+      <div class="field">
+        <label>Área complementar coberta <span class="badge bb">×50%</span></label>
+        <input type="number" id="ac" placeholder="0,00" min="0" step="0.01" oninput="onAreas()">
+      </div>
+      <div class="field" style="margin-bottom:.625rem">
+        <label>Área complementar descoberta <span class="badge ba">×25%</span></label>
+        <input type="number" id="ad" placeholder="0,00" min="0" step="0.01" oninput="onAreas()">
+      </div>
+      <!-- Área resultante: campo calculado exibido -->
+      <div class="area-res-row">
+        <span class="area-res-label">Área resultante (m²)</span>
+        <span class="area-res-val" id="area-res-display">—</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">VAU — Valor de Avaliação Unitário</div>
+      <div id="vau-alert" style="margin-bottom:.75rem;display:none"></div>
+      <div class="vau-row">
+        <div class="field">
+          <label>VAU (R$/m²) <span id="vau-badge" class="badge" style="display:none;background:rgba(16,185,129,.12);color:var(--green2);border:1px solid rgba(16,185,129,.2)"></span></label>
+          <input type="number" id="vau" placeholder="Auto ou informe manualmente" min="0" step="0.01" oninput="calcular()">
+        </div>
+        <button class="vau-btn" onclick="preencherVAU()">↙ Preencher<br>automático</button>
+      </div>
+      <div id="vau-manual-tip" class="alert warn" style="margin-top:8px;display:none">
+        Competência sem dados embutidos.
+        <a href="https://cav.receita.fazenda.gov.br/ecac/Aplicacao.aspx?id=10031&origem=menu" target="_blank" style="color:var(--amber);text-decoration:underline">Consulte o e-CAC ↗</a> e informe manualmente.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Concreto usinado</div>
+      <div class="toggle-row">
+        <span style="font-size:12px">Utilizou concreto usinado na obra?</span>
+        <div style="display:flex;gap:4px">
+          <button class="tog on-yes" id="tog-sim" onclick="setConcreto(true)">Sim</button>
+          <button class="tog" id="tog-nao" onclick="setConcreto(false)">Não</button>
+        </div>
+      </div>
+      <div id="conc-msg" class="alert info" style="font-size:11.5px">Percentual aplicado automaticamente conforme UF e destinação.</div>
+      <div id="conc-pct-wrap" style="display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;font-size:12px;color:var(--muted)">
+        <span>% Concreto usinado (UF / destinação):</span>
+        <strong id="conc-pct" style="color:var(--accent2)">—</strong>
+      </div>
+    </div>
+
+  </div><!-- /col A -->
+
+  <!-- COLUNA B: Parâmetros editáveis -->
+  <div class="card" style="height:fit-content">
+    <div class="card-title">Parâmetros de cálculo — comparativo</div>
+
+    <!-- Cabeçalho A / B -->
+    <div class="ab-header">
+      <div class="ab-col-label"></div>
+      <div class="ab-badge ab-a">
+        <span class="ab-dot a"></span> Cálculo A — Com deduções
+      </div>
+      <div class="ab-badge ab-b">
+        <span class="ab-dot b"></span> Cálculo B — Padrão tabela
+        <span style="font-size:9px;opacity:.7;margin-left:4px">(editável)</span>
+      </div>
+    </div>
+
+    <!-- Percentual de Equivalência -->
+    <div class="ab-row">
+      <div class="ab-row-label">
+        Percentual de Equivalência (%)
+        <span style="font-size:9px;color:var(--muted);display:block;margin-top:1px" id="pe-hint">—</span>
+      </div>
+      <div class="ab-cell a">
+        <input type="number" id="perc_equiv_a" class="ab-inp b-inp" min="0" max="100" step="0.01"
+               oninput="calcular()">
+        <span class="ab-auto-pill">inicia auto</span>
+      </div>
+      <div class="ab-cell b">
+        <input type="number" id="perc_equiv_b" class="ab-inp a-inp" value="100" readonly tabindex="-1">
+        <span class="ab-auto-pill" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:var(--amber)">100%</span>
+      </div>
+    </div>
+
+    <!-- PMO -->
+    <div class="ab-row">
+      <div class="ab-row-label">
+        PMO — % Mão de Obra (%)
+        <span style="font-size:9px;color:var(--muted);display:block;margin-top:1px" id="pmo-hint">—</span>
+        <div id="pmo-ref" style="display:none;gap:4px;margin-top:4px;flex-wrap:wrap">
+          <span id="pmo-ref-alv"></span><span id="pmo-ref-mad"></span><span id="pmo-ref-mis"></span>
+        </div>
+      </div>
+      <div class="ab-cell a">
+        <input type="number" id="pmo_val_a" class="ab-inp a-inp" readonly tabindex="-1">
+        <span class="ab-auto-pill">auto</span>
+      </div>
+      <div class="ab-cell b">
+        <input type="number" id="pmo_val_b" class="ab-inp a-inp" readonly tabindex="-1">
+        <span class="ab-auto-pill">auto</span>
+      </div>
+    </div>
+
+    <!-- Fator Social -->
+    <div class="ab-row" style="border-bottom:none">
+      <div class="ab-row-label">
+        Fator Social — % por faixa de área (%)
+        <span style="font-size:9px;color:var(--muted);display:block;margin-top:1px" id="fs-hint">—</span>
+        <div style="margin-top:6px;font-size:10px;color:var(--muted);line-height:1.7">
+          ≤100m²→20% · ≤200m²→40% · ≤300m²→55% · ≤400m²→70% · >400m²→90%
+        </div>
+      </div>
+      <div class="ab-cell a">
+        <input type="number" id="fator_social_a" class="ab-inp b-inp" min="0" max="100" step="0.01"
+               oninput="calcular()">
+        <span class="ab-auto-pill">inicia auto</span>
+      </div>
+      <div class="ab-cell b">
+        <input type="number" id="fator_social_b" class="ab-inp a-inp" value="100" readonly tabindex="-1">
+        <span class="ab-auto-pill" style="background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:var(--amber)">100%</span>
+      </div>
+    </div>
+
+    <!-- Resumo de parâmetros ativos -->
+    <div class="ab-summary-grid" style="margin-top:.875rem">
+      <div></div>
+      <div class="ab-sum-block a">
+        <div class="ab-sum-row"><span>Equiv.</span><strong id="ps-pe-a">—</strong></div>
+        <div class="ab-sum-row"><span>PMO</span><strong id="ps-pmo-a">—</strong></div>
+        <div class="ab-sum-row"><span>F.Social</span><strong id="ps-fs-a">—</strong></div>
+      </div>
+      <div class="ab-sum-block b">
+        <div class="ab-sum-row"><span>Equiv.</span><strong id="ps-pe-b">—</strong></div>
+        <div class="ab-sum-row"><span>PMO</span><strong id="ps-pmo-b">—</strong></div>
+        <div class="ab-sum-row"><span>F.Social</span><strong id="ps-fs-b">—</strong></div>
+      </div>
+    </div>
+  </div><!-- /col B -->
+
+</div><!-- /grid-2 etapa 1 -->
+
+  <!-- Rodapé Etapa 1 -->
+  <div class="step-footer">
+    <div class="step-progress">
+      <div class="step-dot current" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted)">Etapa 1 de 3</div>
+    <button class="btn-step next" onclick="goStep(2)">
+      Próxima etapa — Aferição sem vinculação
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+</div><!-- /step-1 -->
+
+<!-- ETAPA 2 -->
+<div id="step-2" class="step">
+  <div class="etapa-header">
+    <span class="etapa-num e2">2</span>
+    <div>
+      <div class="etapa-title">Aferição sem vinculação</div>
+      <div class="etapa-desc">Resultado comparativo A/B pelo custo da obra</div>
+    </div>
+  </div>
+
+  <!-- Cards de parâmetros ativos lado a lado -->
+  <div class="ab-result-header">
+    <div class="ab-result-badge a"><span class="ab-dot a"></span> Cálculo A — Com deduções</div>
+    <div class="ab-result-badge b"><span class="ab-dot b"></span> Cálculo B — Padrão tabela</div>
+  </div>
+
+  <!-- Memórias de cálculo lado a lado -->
+  <div class="grid-2">
+    <!-- Memória A -->
+    <div class="card ab-card-a">
+      <div class="card-title" style="color:var(--accent2)">Memória — Cálculo A (com deduções)</div>
+      <table class="ct">
+        <tr><td>Área principal</td><td class="vb" id="a_ap">—</td></tr>
+        <tr><td>Área coberta (×50%)</td><td class="vb" id="a_ac">—</td></tr>
+        <tr><td>Área descoberta (×25%)</td><td class="vb" id="a_ad">—</td></tr>
+        <tr class="sep bold"><td>Área resultante (m²)</td><td class="vb" id="a_ares">—</td></tr>
+        <tr><td>% Equivalência</td><td id="a_feq">—</td></tr>
+        <tr class="bold"><td>Área equivalente (m²)</td><td class="vb" id="a_aeq">—</td></tr>
+        <tr class="sep"><td>VAU <span id="a_comp_lbl" style="color:var(--muted);font-size:11px;font-weight:400"></span></td><td id="a_vau">—</td></tr>
+        <tr class="bold"><td>Custo de obra (R$)</td><td id="a_custo">—</td></tr>
+        <tr class="sep" id="a-rw-pc"><td>% Concreto usinado</td><td id="a_pconc">—</td></tr>
+        <tr id="a-rw-dc"><td>Dedução concreto (R$)</td><td id="a_dconc">—</td></tr>
+        <tr id="a-rw-cd"><td>Custo por destinação (R$)</td><td class="vb" id="a_cdest">—</td></tr>
+        <tr class="sep"><td>PMO</td><td id="a_pmo">—</td></tr>
+        <tr><td>Fator social</td><td id="a_fs">—</td></tr>
+        <tr class="sep bold"><td>RMT (R$)</td><td class="vb" id="a_rmt">—</td></tr>
+        <tr class="sep"><td>INSS (36,80%)</td><td class="vr" id="a_inss_linha">—</td></tr>
+      </table>
+      <div class="res-main green-style" style="margin-top:.875rem">
+        <div class="rl">INSS apurado — Cálculo A</div>
+        <div class="rv green" id="a_res_sem">R$ —</div>
+        <div class="rs" id="a_res_sub">—</div>
+      </div>
+    </div>
+    <!-- Memória B -->
+    <div class="card ab-card-b">
+      <div class="card-title" style="color:var(--amber)">Memória — Cálculo B (padrão tabela)</div>
+      <table class="ct">
+        <tr><td>Área principal</td><td class="vb" id="b_ap">—</td></tr>
+        <tr><td>Área coberta (×50%)</td><td class="vb" id="b_ac">—</td></tr>
+        <tr><td>Área descoberta (×25%)</td><td class="vb" id="b_ad">—</td></tr>
+        <tr class="sep bold"><td>Área resultante (m²)</td><td class="vb" id="b_ares">—</td></tr>
+        <tr><td>% Equivalência</td><td id="b_feq">—</td></tr>
+        <tr class="bold"><td>Área equivalente (m²)</td><td class="vb" id="b_aeq">—</td></tr>
+        <tr class="sep"><td>VAU <span id="b_comp_lbl" style="color:var(--muted);font-size:11px;font-weight:400"></span></td><td id="b_vau">—</td></tr>
+        <tr class="bold"><td>Custo de obra (R$)</td><td id="b_custo">—</td></tr>
+        <tr class="sep" id="b-rw-pc"><td>% Concreto usinado</td><td id="b_pconc">—</td></tr>
+        <tr id="b-rw-dc"><td>Dedução concreto (R$)</td><td id="b_dconc">—</td></tr>
+        <tr id="b-rw-cd"><td>Custo por destinação (R$)</td><td class="vb" id="b_cdest">—</td></tr>
+        <tr class="sep"><td>PMO</td><td id="b_pmo">—</td></tr>
+        <tr><td>Fator social</td><td id="b_fs">—</td></tr>
+        <tr class="sep bold"><td>RMT (R$)</td><td class="vb" id="b_rmt">—</td></tr>
+        <tr class="sep"><td>INSS (36,80%)</td><td class="vr" id="b_inss_linha">—</td></tr>
+      </table>
+      <div class="res-main" style="margin-top:.875rem;border:1px solid rgba(245,158,11,.3);background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.03))">
+        <div class="rl">INSS apurado — Cálculo B</div>
+        <div class="rv" style="color:var(--amber)" id="b_res_sem">R$ —</div>
+        <div class="rs" id="b_res_sub">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel comparativo resumo -->
+  <div class="card">
+    <div class="card-title">Comparativo — Etapa 2 (sem vinculação)</div>
+    <div class="comp-grid">
+      <div></div>
+      <div class="comp-col-head a"><span class="ab-dot a"></span> Cálculo A</div>
+      <div class="comp-col-head b"><span class="ab-dot b"></span> Cálculo B</div>
+      <div class="comp-col-head diff">Diferença</div>
+      <div class="comp-row-label">RMT</div>
+      <div class="comp-val" id="cmp_rmt_a">—</div>
+      <div class="comp-val" id="cmp_rmt_b">—</div>
+      <div class="comp-val diff" id="cmp_rmt_diff">—</div>
+      <div class="comp-row-label">INSS apurado</div>
+      <div class="comp-val" id="cmp_inss_a">—</div>
+      <div class="comp-val" id="cmp_inss_b">—</div>
+      <div class="comp-val diff" id="cmp_inss_diff">—</div>
+    </div>
+    <div style="margin-top:.875rem;padding:10px 14px;background:var(--surface);border-radius:var(--r2);font-size:12px">
+      <span style="color:var(--muted)">RMT da Etapa 3:</span>
+      <span style="margin:0 12px"><span class="ab-dot a"></span> Cálculo A → <strong id="rmt-para-proxima-a" style="color:var(--accent2)">R$ —</strong></span>
+      <span><span class="ab-dot b"></span> Cálculo B → <strong id="rmt-para-proxima-b" style="color:var(--amber)">R$ —</strong></span>
+    </div>
+  </div>
+
+  <!-- Códigos de receita -->
+  <div class="card">
+    <div class="card-title">Códigos de receita — 36,80%</div>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:11.5px">
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">1138-31 · CP Patronal Empregados</span><strong>20,0%</strong></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">1082-31 · CP Segurados Empregados</span><strong>8,0%</strong></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">1646-31 · CP Patronal GILRAT</span><strong>3,0%</strong></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">1170-31 · Salário Educação</span><strong>2,5%</strong></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">1176-31 · INCRA</span><strong>0,2%</strong></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">1200-31 · SEBRAE</span><strong>0,6%</strong></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">1184-31 · SESI</span><strong>1,5%</strong></div>
+      <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">1181-31 · SENAI</span><strong>1,0%</strong></div>
+      <div class="divider" style="margin:.5rem 0"></div>
+      <div style="display:flex;justify-content:space-between;font-weight:600"><span>Total</span><span>36,8%</span></div>
+    </div>
+  </div>
+
+  <!-- Rodapé Etapa 2 -->
+  <div class="step-footer">
+    <button class="btn-step prev" onclick="goStep(1)">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Etapa 1 — Dados
+    </button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="step-progress">
+        <div class="step-dot done" id="dot-1b"></div>
+        <div class="step-dot current" id="dot-2b"></div>
+        <div class="step-dot" id="dot-3b"></div>
+      </div>
+      <span style="font-size:12px;color:var(--muted)">Etapa 2 de 3</span>
+    </div>
+    <button class="btn-step next" onclick="goStep(3)">
+      Próxima — Aferição com vinculação
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+</div><!-- /step-2 -->
+
+<!-- ETAPA 3 -->
+<div id="step-3" class="step">
+  <div class="etapa-header">
+    <span class="etapa-num e3">3</span>
+    <div>
+      <div class="etapa-title">Aferição com vinculação</div>
+      <div class="etapa-desc">Fator de Ajuste, CPP sobre remunerações e comparativo final</div>
+    </div>
+  </div>
+
+  <div class="ab-result-header">
+    <div class="ab-result-badge a"><span class="ab-dot a"></span> Cálculo A — Com deduções</div>
+    <div class="ab-result-badge b"><span class="ab-dot b"></span> Cálculo B — Padrão tabela</div>
+  </div>
+
+  <!-- Faixa 1: RMT lado a lado -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">RMT — Cálculo A <span style="font-size:9px;font-weight:400;color:var(--muted);text-transform:none">(da Etapa 2 — editável)</span></div>
+      <div style="font-size:20px;font-weight:600;color:var(--accent2);font-variant-numeric:tabular-nums;margin-bottom:.75rem" id="rmt-from-sem-a">R$ —</div>
+      <div class="field" style="margin:0">
+        <label style="color:var(--accent2)">Editar RMT — A (R$)</label>
+        <input type="number" id="c_rmt_a" min="0" step="0.01" oninput="calcCom()">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">RMT — Cálculo B <span style="font-size:9px;font-weight:400;color:var(--muted);text-transform:none">(da Etapa 2 — editável)</span></div>
+      <div style="font-size:20px;font-weight:600;color:var(--amber);font-variant-numeric:tabular-nums;margin-bottom:.75rem" id="rmt-from-sem-b">R$ —</div>
+      <div class="field" style="margin:0">
+        <label style="color:var(--amber)">Editar RMT — B (R$)</label>
+        <input type="number" id="c_rmt_b" min="0" step="0.01" oninput="calcCom()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Faixa 2: Remunerações mensais + INSS recolhido -->
+  <div class="card">
+    <div class="card-title">Remuneração mensal <span style="font-size:9px;color:var(--muted);font-weight:400;text-transform:none">— compartilhado A e B</span></div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:.75rem">* ICM = Índice de Correção Monetária. Valor Atualizado = Rem × (1+ICM%). CPP = 20% sobre a Remuneração original.</div>
+    <div class="mrow-header">
+      <span>Mês/Ano</span><span>Remuneração (R$)</span><span>ICM* (%)</span><span>Val. Atualizado</span>
+      <span>CPP 20%</span><span>Multa 20%</span><span>Juros MORA</span><span>MAED Mín.</span><span>Total</span><span></span>
+    </div>
+    <div id="monthly-rows"></div>
+    <button class="btn-add" onclick="addRow()">+ Adicionar mês</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.75rem;margin-top:.875rem;padding-top:.875rem;border-top:1px solid var(--border)">
+      <div class="stat"><div class="slbl">Total remunerações</div><div class="sval blue" id="c_tot">—</div></div>
+      <div class="stat"><div class="slbl">Total CPP 20%</div><div class="sval amber" id="c_cpp">—</div></div>
+      <div class="stat"><div class="slbl">Multa/Juros/MAED</div><div class="sval" id="c_extras">—</div></div>
+      <div class="stat" style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15)"><div class="slbl">INSS a Pagar</div><div class="sval red" id="c_ipg_tot">—</div></div>
+    </div>
+    <div style="margin-top:.875rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:end">
+      <div class="field" style="margin:0">
+        <label>INSS já recolhido no período (R$)</label>
+        <input type="number" id="c_rec" placeholder="0,00" min="0" step="0.01" oninput="calcCom()">
+      </div>
+      <div id="c_diff" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Faixa 3: Resultados A e B lado a lado -->
+  <div class="grid-2">
+    <!-- Cálculo A -->
+    <div class="card ab-card-a">
+      <div class="card-title" style="color:var(--accent2)">Apuração A — com deduções</div>
+      <table class="ct">
+        <tr><td>RMT total</td><td id="ca_r1">—</td></tr>
+        <tr><td>Fator de Ajuste (50%)</td><td>50,00%</td></tr>
+        <tr class="sep bold"><td>RMT para FA</td><td class="vb" id="ca_r2">—</td></tr>
+        <tr class="sep"><td>CPP 20%</td><td class="va" id="ca_r3">—</td></tr>
+        <tr><td>Extras</td><td id="ca_r4">—</td></tr>
+        <tr class="sep bold"><td>INSS a Pagar</td><td class="vr" id="ca_ipg">—</td></tr>
+      </table>
+      <div class="stats" style="margin-top:.875rem">
+        <div class="stat" style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15)">
+          <div class="slbl">INSS Devido</div><div class="sval red" id="ca_sd">—</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px">Etapa 2 — A</div>
+        </div>
+        <div class="stat" style="background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15)">
+          <div class="slbl">INSS a Pagar</div><div class="sval amber" id="ca_sp">—</div>
+        </div>
+        <div class="stat" style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15)">
+          <div class="slbl">Economia</div><div class="sval green" id="ca_se">—</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px" id="ca_spct">—</div>
+        </div>
+      </div>
+      <div style="padding:.75rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:var(--r2);margin-top:.875rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+          <div><div class="slbl">Economia gerada</div><div style="font-size:17px;font-weight:600;color:var(--green2);font-variant-numeric:tabular-nums;margin-top:2px" id="ca_eco">R$ —</div><div style="font-size:10px;color:var(--muted)" id="ca_eco_pct">—</div></div>
+          <div><div class="slbl">Economia real</div><div style="font-size:17px;font-weight:600;color:var(--accent2);font-variant-numeric:tabular-nums;margin-top:2px" id="ca_eco_real">R$ —</div></div>
+        </div>
+      </div>
+      <div class="res-main green-style" style="margin-top:.875rem">
+        <div class="rl">INSS a recolher — Cálculo A</div>
+        <div class="rv green" id="ca_res">R$ —</div>
+        <div class="rs" id="ca_sub">—</div>
+      </div>
+    </div>
+
+    <!-- Cálculo B -->
+    <div class="card ab-card-b">
+      <div class="card-title" style="color:var(--amber)">Apuração B — padrão tabela</div>
+      <table class="ct">
+        <tr><td>RMT total</td><td id="cb_r1">—</td></tr>
+        <tr><td>Fator de Ajuste (50%)</td><td>50,00%</td></tr>
+        <tr class="sep bold"><td>RMT para FA</td><td class="vb" id="cb_r2">—</td></tr>
+        <tr class="sep"><td>CPP 20%</td><td class="va" id="cb_r3">—</td></tr>
+        <tr><td>Extras</td><td id="cb_r4">—</td></tr>
+        <tr class="sep bold"><td>INSS a Pagar</td><td class="vr" id="cb_ipg">—</td></tr>
+      </table>
+      <div class="stats" style="margin-top:.875rem">
+        <div class="stat" style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15)">
+          <div class="slbl">INSS Devido</div><div class="sval red" id="cb_sd">—</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px">Etapa 2 — B</div>
+        </div>
+        <div class="stat" style="background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15)">
+          <div class="slbl">INSS a Pagar</div><div class="sval amber" id="cb_sp">—</div>
+        </div>
+        <div class="stat" style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15)">
+          <div class="slbl">Economia</div><div class="sval green" id="cb_se">—</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px" id="cb_spct">—</div>
+        </div>
+      </div>
+      <div style="padding:.75rem;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:var(--r2);margin-top:.875rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+          <div><div class="slbl">Economia gerada</div><div style="font-size:17px;font-weight:600;color:var(--green2);font-variant-numeric:tabular-nums;margin-top:2px" id="cb_eco">R$ —</div><div style="font-size:10px;color:var(--muted)" id="cb_eco_pct">—</div></div>
+          <div><div class="slbl">Economia real</div><div style="font-size:17px;font-weight:600;color:var(--amber);font-variant-numeric:tabular-nums;margin-top:2px" id="cb_eco_real">R$ —</div></div>
+        </div>
+      </div>
+      <div class="res-main" style="margin-top:.875rem;border:1px solid rgba(245,158,11,.3);background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.03))">
+        <div class="rl">INSS a recolher — Cálculo B</div>
+        <div class="rv" style="color:var(--amber)" id="cb_res">R$ —</div>
+        <div class="rs" id="cb_sub">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparativo final -->
+  <div class="card">
+    <div class="card-title">Comparativo final — com vinculação</div>
+    <div class="comp-grid">
+      <div></div>
+      <div class="comp-col-head a"><span class="ab-dot a"></span> Cálculo A</div>
+      <div class="comp-col-head b"><span class="ab-dot b"></span> Cálculo B</div>
+      <div class="comp-col-head diff">Δ (B−A)</div>
+      <div class="comp-row-label">INSS Devido</div>
+      <div class="comp-val" id="cmp3_deve_a">—</div>
+      <div class="comp-val" id="cmp3_deve_b">—</div>
+      <div class="comp-val diff" id="cmp3_deve_diff">—</div>
+      <div class="comp-row-label">INSS a Pagar</div>
+      <div class="comp-val" id="cmp3_ipg_a">—</div>
+      <div class="comp-val" id="cmp3_ipg_b">—</div>
+      <div class="comp-val diff" id="cmp3_ipg_diff">—</div>
+      <div class="comp-row-label">Economia gerada</div>
+      <div class="comp-val" id="cmp3_eco_a">—</div>
+      <div class="comp-val" id="cmp3_eco_b">—</div>
+      <div class="comp-val diff" id="cmp3_eco_diff">—</div>
+      <div class="comp-row-label">Economia real</div>
+      <div class="comp-val" id="cmp3_eral_a">—</div>
+      <div class="comp-val" id="cmp3_eral_b">—</div>
+      <div class="comp-val diff" id="cmp3_eral_diff">—</div>
+    </div>
+  </div>
+  <!-- Rodapé Etapa 3 -->
+  <div class="step-footer">
+    <button class="btn-step prev" onclick="goStep(2)">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Etapa 2 — Sem vinculação
+    </button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="step-progress">
+        <div class="step-dot done" id="dot-1c"></div>
+        <div class="step-dot done" id="dot-2c"></div>
+        <div class="step-dot current" id="dot-3c"></div>
+      </div>
+      <span style="font-size:12px;color:var(--muted)">Etapa 3 de 3</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-step" style="background:rgba(16,185,129,.12);color:var(--green2);border:1px solid rgba(16,185,129,.25)" onclick="salvarRelatorio()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Salvar simulação
+      </button>
+      <button class="btn-step next" onclick="gerarRelatorio()">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Imprimir relatório
+      </button>
+    </div>
+  </div>
+</div><!-- /step-3 -->
+
+</main>
+</div><!-- /app -->
+
+<script defer>
+// ═══════════════════════════════════════════════════════
+const VAU_DB = {
+  '2026-03':{
+    AC:{res_uni:4104.91,res_multi:3469.52,comercial:3842.19,garagens:3842.19,galpao:1776.24,casa_pop:2074.00,conj_hab:2074.00},
+    AL:{res_uni:2475.47,res_multi:2133.36,comercial:2386.29,garagens:2386.29,galpao:1114.62,casa_pop:1318.34,conj_hab:1318.34},
+    AM:{res_uni:4104.91,res_multi:3469.52,comercial:3842.19,garagens:3842.19,galpao:1776.24,casa_pop:2074.00,conj_hab:2074.00},
+    AP:{res_uni:3267.77,res_multi:2886.11,comercial:3276.48,garagens:3276.48,galpao:1557.50,casa_pop:1840.68,conj_hab:1840.68},
+    BA:{res_uni:2663.67,res_multi:2232.45,comercial:2556.85,garagens:2556.85,galpao:1160.05,casa_pop:1439.64,conj_hab:1439.64},
+    CE:{res_uni:2785.25,res_multi:2418.67,comercial:2753.05,garagens:2753.05,galpao:1304.20,casa_pop:1640.90,conj_hab:1640.90},
+    DF:{res_uni:2810.05,res_multi:2434.93,comercial:2786.53,garagens:2786.53,galpao:1246.29,casa_pop:1537.18,conj_hab:1537.18},
+    ES:{res_uni:3293.16,res_multi:2801.74,comercial:3122.12,garagens:3122.12,galpao:1414.77,casa_pop:1854.55,conj_hab:1854.55},
+    GO:{res_uni:2753.86,res_multi:2299.16,comercial:2617.46,garagens:2617.46,galpao:1223.21,casa_pop:1469.12,conj_hab:1469.12},
+    MA:{res_uni:2272.64,res_multi:2173.86,comercial:2219.88,garagens:2219.88,galpao:1059.26,casa_pop:1270.12,conj_hab:1270.12},
+    MT:{res_uni:3877.77,res_multi:3370.06,comercial:3829.54,garagens:3829.54,galpao:1684.05,casa_pop:2150.45,conj_hab:2150.45},
+    MS:{res_uni:2180.01,res_multi:1825.98,comercial:2269.58,garagens:2269.58,galpao:1023.08,casa_pop:1250.81,conj_hab:1250.81},
+    MG:{res_uni:2971.85,res_multi:2578.22,comercial:2894.81,garagens:2894.81,galpao:1273.47,casa_pop:1670.11,conj_hab:1670.11},
+    PA:{res_uni:2822.93,res_multi:2465.98,comercial:2776.44,garagens:2776.44,galpao:1312.96,casa_pop:1601.82,conj_hab:1601.82},
+    PB:{res_uni:2030.14,res_multi:1799.03,comercial:2022.26,garagens:2022.26,galpao: 929.45,casa_pop:1098.66,conj_hab:1098.66},
+    PE:{res_uni:2708.78,res_multi:2265.38,comercial:2570.88,garagens:2570.88,galpao:1176.52,casa_pop:1502.85,conj_hab:1502.85},
+    PI:{res_uni:2272.64,res_multi:1959.97,comercial:2219.88,garagens:2219.88,galpao:1059.26,casa_pop:1270.12,conj_hab:1270.12},
+    PR:{res_uni:3231.99,res_multi:2752.92,comercial:3147.92,garagens:3147.92,galpao:1410.95,casa_pop:1768.22,conj_hab:1768.22},
+    RJ:{res_uni:3000.78,res_multi:2583.28,comercial:2938.23,garagens:2938.23,galpao:1334.13,casa_pop:1675.76,conj_hab:1675.76},
+    RN:{res_uni:2565.42,res_multi:2202.48,comercial:2450.96,garagens:2450.96,galpao:1178.28,casa_pop:1481.41,conj_hab:1481.41},
+    RS:{res_uni:3354.96,res_multi:2970.15,comercial:3522.20,garagens:3522.20,galpao:1366.69,casa_pop:1794.71,conj_hab:1794.71},
+    RO:{res_uni:2862.81,res_multi:2605.06,comercial:2946.34,garagens:2946.34,galpao:1313.69,casa_pop:1682.79,conj_hab:1682.79},
+    RR:{res_uni:3563.30,res_multi:3054.06,comercial:3479.48,garagens:3479.48,galpao:1667.84,casa_pop:1851.53,conj_hab:1851.53},
+    SC:{res_uni:3384.94,res_multi:2872.24,comercial:3300.46,garagens:3300.46,galpao:1526.77,casa_pop:1930.40,conj_hab:1930.40},
+    SP:{res_uni:2617.77,res_multi:2283.17,comercial:2599.09,garagens:2599.09,galpao:1224.48,casa_pop:1468.05,conj_hab:1468.05},
+    SE:{res_uni:2466.06,res_multi:2233.82,comercial:2501.82,garagens:2501.82,galpao:1150.29,casa_pop:1351.40,conj_hab:1351.40},
+    TO:{res_uni:2753.86,res_multi:2299.16,comercial:2617.46,garagens:2617.46,galpao:1223.21,casa_pop:1469.12,conj_hab:1469.12},
+  },
+  '2026-01':{
+    AC:{res_uni:4070.64,res_multi:3440.56,comercial:3810.12,garagens:3810.12,galpao:1761.42,casa_pop:2056.69,conj_hab:2056.69},
+    AL:{res_uni:2454.82,res_multi:2115.56,comercial:2366.38,garagens:2366.38,galpao:1105.32,casa_pop:1307.34,conj_hab:1307.34},
+    AM:{res_uni:4070.64,res_multi:3440.56,comercial:3810.12,garagens:3810.12,galpao:1761.42,casa_pop:2056.69,conj_hab:2056.69},
+    AP:{res_uni:2799.38,res_multi:2445.39,comercial:2753.28,garagens:2753.28,galpao:1302.00,casa_pop:1588.45,conj_hab:1588.45},
+    BA:{res_uni:2641.44,res_multi:2213.81,comercial:2535.51,garagens:2535.51,galpao:1150.36,casa_pop:1427.62,conj_hab:1427.62},
+    CE:{res_uni:2762.01,res_multi:2398.49,comercial:2730.07,garagens:2730.07,galpao:1293.32,casa_pop:1627.20,conj_hab:1627.20},
+    DF:{res_uni:2786.59,res_multi:2414.62,comercial:2763.28,garagens:2763.28,galpao:1235.89,casa_pop:1524.35,conj_hab:1524.35},
+    ES:{res_uni:3265.68,res_multi:2778.36,comercial:3096.05,garagens:3096.05,galpao:1402.97,casa_pop:1839.07,conj_hab:1839.07},
+    GO:{res_uni:2730.88,res_multi:2279.97,comercial:2595.61,garagens:2595.61,galpao:1213.00,casa_pop:1456.86,conj_hab:1456.86},
+    MA:{res_uni:2253.67,res_multi:2155.71,comercial:2201.36,garagens:2201.36,galpao:1050.42,casa_pop:1259.51,conj_hab:1259.51},
+    MT:{res_uni:3845.40,res_multi:3341.94,comercial:3797.58,garagens:3797.58,galpao:1670.00,casa_pop:2132.49,conj_hab:2132.49},
+    MS:{res_uni:3845.40,res_multi:3341.94,comercial:3797.58,garagens:3797.58,galpao:1670.00,casa_pop:2132.49,conj_hab:2132.49},
+    MG:{res_uni:2947.06,res_multi:2556.70,comercial:2870.65,garagens:2870.65,galpao:1262.83,casa_pop:1656.18,conj_hab:1656.18},
+    PA:{res_uni:2799.38,res_multi:2445.39,comercial:2753.28,garagens:2753.28,galpao:1302.00,casa_pop:1588.45,conj_hab:1588.45},
+    PB:{res_uni:2013.20,res_multi:1784.00,comercial:2005.39,garagens:2005.39,galpao: 921.70,casa_pop:1089.49,conj_hab:1089.49},
+    PE:{res_uni:2686.17,res_multi:2246.47,comercial:2549.42,garagens:2549.42,galpao:1166.70,casa_pop:1490.32,conj_hab:1490.32},
+    PI:{res_uni:2253.67,res_multi:1943.60,comercial:2201.36,garagens:2201.36,galpao:1050.42,casa_pop:1259.51,conj_hab:1259.51},
+    PR:{res_uni:3205.01,res_multi:2729.95,comercial:3121.65,garagens:3121.65,galpao:1399.17,casa_pop:1753.47,conj_hab:1753.47},
+    RJ:{res_uni:2975.73,res_multi:2561.72,comercial:2913.71,garagens:2913.71,galpao:1323.00,casa_pop:1661.77,conj_hab:1661.77},
+    RN:{res_uni:2544.01,res_multi:2184.09,comercial:2430.51,garagens:2430.51,galpao:1168.45,casa_pop:1469.04,conj_hab:1469.04},
+    RS:{res_uni:3326.96,res_multi:2945.35,comercial:3492.79,garagens:3492.79,galpao:1355.29,casa_pop:1779.73,conj_hab:1779.73},
+    RO:{res_uni:2838.91,res_multi:2583.33,comercial:2921.75,garagens:2921.75,galpao:1302.72,casa_pop:1668.74,conj_hab:1668.74},
+    RR:{res_uni:4070.64,res_multi:3440.56,comercial:3810.12,garagens:3810.12,galpao:1761.42,casa_pop:2056.69,conj_hab:2056.69},
+    SC:{res_uni:3356.69,res_multi:2848.26,comercial:3272.92,garagens:3272.92,galpao:1514.03,casa_pop:1914.28,conj_hab:1914.28},
+    SP:{res_uni:2595.91,res_multi:2264.11,comercial:2577.41,garagens:2577.41,galpao:1214.26,casa_pop:1455.79,conj_hab:1455.79},
+    SE:{res_uni:2445.47,res_multi:2215.18,comercial:2480.94,garagens:2480.94,galpao:1140.69,casa_pop:1340.12,conj_hab:1340.12},
+    TO:{res_uni:2730.88,res_multi:2279.97,comercial:2595.61,garagens:2595.61,galpao:1213.00,casa_pop:1456.86,conj_hab:1456.86},
+  },
+};
+const MESES_COM_DADOS = new Set(Object.keys(VAU_DB));
+
+// Concreto usinado por UF/destinação (fixo — RFB IN 2021)
+const CONC={
+  AC:{res_uni:7.43,res_multi:9.61,comercial:13.33,garagens:13.33,galpao:4.52,casa_pop:4.69,conj_hab:4.69},
+  AL:{res_uni:6.11,res_multi:8.12,comercial:11.35,garagens:11.35,galpao:3.82,casa_pop:3.98,conj_hab:3.98},
+  AM:{res_uni:7.43,res_multi:9.61,comercial:13.33,garagens:13.33,galpao:4.52,casa_pop:4.69,conj_hab:4.69},
+  AP:{res_uni:7.48,res_multi:9.41,comercial:12.93,garagens:12.93,galpao:4.38,casa_pop:4.88,conj_hab:4.88},
+  BA:{res_uni:5.53,res_multi:7.46,comercial:10.31,garagens:10.31,galpao:3.62,casa_pop:3.73,conj_hab:3.73},
+  CE:{res_uni:5.72,res_multi:7.69,comercial:10.69,garagens:10.69,galpao:3.44,casa_pop:3.70,conj_hab:3.70},
+  DF:{res_uni:5.24,res_multi:7.06,comercial:9.62, garagens:9.62, galpao:3.43,casa_pop:3.53,conj_hab:3.53},
+  ES:{res_uni:5.15,res_multi:6.85,comercial:9.45, garagens:9.45, galpao:3.26,casa_pop:3.33,conj_hab:3.33},
+  GO:{res_uni:5.79,res_multi:7.62,comercial:10.27,garagens:10.27,galpao:3.60,casa_pop:3.88,conj_hab:3.88},
+  MA:{res_uni:6.94,res_multi:8.73,comercial:12.06,garagens:12.06,galpao:4.07,casa_pop:4.18,conj_hab:4.18},
+  MG:{res_uni:4.68,res_multi:6.22,comercial:8.66, garagens:8.66, galpao:3.05,casa_pop:3.15,conj_hab:3.15},
+  MS:{res_uni:6.74,res_multi:8.74,comercial:12.20,garagens:12.20,galpao:4.28,casa_pop:4.34,conj_hab:4.34},
+  MT:{res_uni:6.22,res_multi:8.01,comercial:10.96,garagens:10.96,galpao:3.89,casa_pop:4.02,conj_hab:4.02},
+  PA:{res_uni:7.58,res_multi:9.77,comercial:13.48,garagens:13.48,galpao:4.45,casa_pop:4.91,conj_hab:4.91},
+  PB:{res_uni:6.32,res_multi:8.58,comercial:11.81,garagens:11.81,galpao:3.81,casa_pop:4.12,conj_hab:4.12},
+  PE:{res_uni:5.12,res_multi:6.89,comercial:9.74, garagens:9.47, galpao:3.42,casa_pop:3.51,conj_hab:3.51},
+  PI:{res_uni:5.33,res_multi:7.16,comercial:10.00,garagens:10.00,galpao:3.30,casa_pop:3.53,conj_hab:3.53},
+  PR:{res_uni:4.91,res_multi:6.50,comercial:8.78, garagens:8.78, galpao:3.08,casa_pop:3.18,conj_hab:3.18},
+  RJ:{res_uni:4.94,res_multi:6.52,comercial:9.02, garagens:9.02, galpao:3.08,casa_pop:3.20,conj_hab:3.20},
+  RN:{res_uni:5.98,res_multi:7.62,comercial:10.41,garagens:10.41,galpao:3.63,casa_pop:4.01,conj_hab:4.01},
+  RO:{res_uni:6.22,res_multi:8.01,comercial:10.96,garagens:10.96,galpao:3.89,casa_pop:4.02,conj_hab:4.02},
+  RR:{res_uni:7.43,res_multi:9.61,comercial:13.33,garagens:13.33,galpao:4.52,casa_pop:4.69,conj_hab:4.69},
+  RS:{res_uni:5.01,res_multi:6.54,comercial:8.77, garagens:8.77, galpao:3.23,casa_pop:3.25,conj_hab:3.25},
+  SC:{res_uni:4.79,res_multi:6.19,comercial:8.36, garagens:8.36, galpao:2.87,casa_pop:2.93,conj_hab:2.93},
+  SE:{res_uni:6.97,res_multi:9.05,comercial:12.50,garagens:12.50,galpao:4.18,casa_pop:4.34,conj_hab:4.34},
+  SP:{res_uni:4.90,res_multi:6.35,comercial:8.69, garagens:8.69, galpao:2.96,casa_pop:3.15,conj_hab:3.15},
+  TO:{res_uni:5.33,res_multi:7.16,comercial:10.00,garagens:10.00,galpao:3.30,casa_pop:3.53,conj_hab:3.53},
+};
+
+// Tabelas de parâmetros
+function calcFatorEquivAuto(dest,area){
+  if(dest==='res_uni')   return area<=1000?89:85;
+  if(dest==='res_multi') return area<=1000?90:86;
+  if(dest==='comercial'||dest==='garagens') return area<=3000?86:83;
+  if(dest==='galpao')    return 95;
+  return 98;
+}
+function calcFatorSocialAuto(area){
+  if(area<=100) return 20;
+  if(area<=200) return 40;
+  if(area<=300) return 55;
+  if(area<=400) return 70;
+  return 90;
+}
+function calcPMOAuto(dest,tipo){
+  const pop=dest==='casa_pop'||dest==='conj_hab';
+  if(tipo==='alvenaria') return pop?12:20;
+  return pop?7:15;
+}
+
+// ─── ESTADO ───────────────────────────────────────────
+let usaConc=true, ultimoINSS_a=0, ultimoINSS_b=0, ultimoRMT_a=0, ultimoRMT_b=0, rowC=0;
+
+// ─── UTILS ────────────────────────────────────────────
+const R=(v,d=2)=>isNaN(v)||v==null?'R$ —':'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const N=(v,d=2)=>isNaN(v)||v==null?'—':v.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const P2=(v)=>isNaN(v)||v==null?'—':N(v)+'%';
+const $=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+const $id=id=>document.getElementById(id);
+
+// ─── SELETOR DE COMPETÊNCIA ────────────────────────────
+const MESES_PT=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+function gerarOpcoesMeses(){
+  const sel=$id('comp');sel.innerHTML='';
+  const hoje=new Date();
+  const anoAtual=hoje.getFullYear();
+  const mesAtual=hoje.getMonth()+1; // 1-12
+  const anoFim=anoAtual+1;
+  for(let ano=anoFim;ano>=2021;ano--){
+    const mesMax=(ano===anoAtual)?mesAtual:(ano>anoAtual?0:12);
+    if(mesMax===0) continue; // ano futuro completo — pular
+    const mesMin=(ano===2021)?6:1;
+    for(let mes=mesMax;mes>=mesMin;mes--){
+      const k=`${ano}-${String(mes).padStart(2,'0')}`;
+      const disp=MESES_COM_DADOS.has(k);
+      const opt=document.createElement('option');
+      opt.value=k;
+      opt.textContent=`${MESES_PT[mes-1]} / ${ano}`+(disp?' ✓':'');
+      sel.appendChild(opt);
+    }
+  }
+  // Selecionar o mês mais recente com dados disponíveis
+  const maisRecente=Array.from(MESES_COM_DADOS).sort().reverse()[0];
+  sel.value=maisRecente||`${anoAtual}-${String(mesAtual).padStart(2,'0')}`;
+  atualizarBadgeComp();
+}
+function onCompChange(){
+  atualizarBadgeComp();
+  $id('vau').value='';
+  $id('vau-badge').style.display='none';
+  $id('vau-alert').style.display='none';
+  autoVAU();calcular();
+}
+function atualizarBadgeComp(){
+  const comp=$id('comp').value;
+  const b=$id('comp-badge');
+  const disp=MESES_COM_DADOS.has(comp);
+  b.className=disp?'cbadge ok':'cbadge manual';
+  b.textContent=disp?'Dados disponíveis ✓':'Informe o VAU manualmente';
+  const tip=$id('vau-manual-tip');if(tip)tip.style.display=disp?'none':'block';
+  const [ano,mes]=comp.split('-');
+  const lbl=`${MESES_PT[parseInt(mes)-1].substring(0,3).toLowerCase()}/${ano}`;
+  $('sb-comp',`VAU: ${lbl}`);
+  // Atualizar ambas as memórias de cálculo
+  $('a_comp_lbl',`(${lbl})`);$('b_comp_lbl',`(${lbl})`);
+  const bd=$id('vau-badge');if(bd)bd.textContent=lbl;
+}
+function autoVAU(){
+  const uf=$id('uf').value,dest=$id('dest').value,comp=$id('comp').value;
+  if(!uf||!dest)return;
+  if(!MESES_COM_DADOS.has(comp)){
+    // Sem dados para esse mês — limpar VAU só se estava preenchido automaticamente
+    const badge=$id('vau-badge');
+    if(badge&&badge.style.display!=='none') {
+      $id('vau').value='';badge.style.display='none';
+    }
+    return;
+  }
+  const v=VAU_DB[comp]?.[uf]?.[dest];
+  if(v){
+    $id('vau').value=v.toFixed(2);
+    const badge=$id('vau-badge');
+    if(badge){badge.style.display='inline-flex';badge.textContent=comp.replace(/(\d{4})-(\d{2})/,'$2/$1');}
+  }
+}
+function preencherVAU(){
+  const uf=$id('uf').value,dest=$id('dest').value,comp=$id('comp').value;
+  const al=$id('vau-alert');
+  if(!uf&&!dest){al.innerHTML='<div class="alert warn">Selecione a UF e a destinação antes.</div>';al.style.display='block';return;}
+  if(!uf){al.innerHTML='<div class="alert warn">Selecione a UF antes.</div>';al.style.display='block';return;}
+  if(!dest){al.innerHTML='<div class="alert warn">Selecione a destinação antes.</div>';al.style.display='block';return;}
+  if(!MESES_COM_DADOS.has(comp)){
+    al.innerHTML='<div class="alert warn">Competência sem dados embutidos. <a href="https://cav.receita.fazenda.gov.br/ecac/Aplicacao.aspx?id=10031&origem=menu" target="_blank" style="color:var(--amber);text-decoration:underline">Consulte o e-CAC ↗</a></div>';
+    al.style.display='block';return;
+  }
+  const v=VAU_DB[comp]?.[uf]?.[dest];
+  if(!v){al.innerHTML=`<div class="alert error">VAU não encontrado para ${uf} / ${dest} em ${comp}.</div>`;al.style.display='block';return;}
+  $id('vau').value=v.toFixed(2);
+  $id('vau-badge').style.display='inline-flex';
+  const [ano,mes]=comp.split('-');
+  al.innerHTML=`<div class="alert success">VAU ${MESES_PT[parseInt(mes)-1]}/${ano} preenchido: <strong>${R(v)}</strong></div>`;
+  al.style.display='block';
+  calcular();
+}
+
+// ─── PARÂMETROS EDITÁVEIS ──────────────────────────────
+// ─── PARÂMETROS EDITÁVEIS A/B ─────────────────────────
+function onParamManual(){}  // mantido por compatibilidade
+
+function atualizarParams(dest,tipo,ares){
+  let pe_auto=null,pmo_auto=null,fs_auto=null;
+  if(dest&&ares>0){ pe_auto=calcFatorEquivAuto(dest,ares); fs_auto=calcFatorSocialAuto(ares); }
+  if(dest&&tipo)  { pmo_auto=calcPMOAuto(dest,tipo); }
+
+  // PMO — automático em A e B (ambos readonly)
+  if(pmo_auto!=null){
+    $id('pmo_val_a').value=pmo_auto;
+    $id('pmo_val_b').value=pmo_auto;
+    $('pmo-hint',`Tabela: ${tipo}`);
+    const pop=dest==='casa_pop'||dest==='conj_hab';
+    const alv=pop?12:20,mad=pop?7:15,mis=pop?7:15;
+    $id('pmo-ref').style.display='flex';
+    $id('pmo-ref-alv').innerHTML=`<span class="badge bb" style="font-size:10px">Alvenaria ${alv}%</span>`;
+    $id('pmo-ref-mad').innerHTML=`<span class="badge ba" style="font-size:10px">Madeira ${mad}%</span>`;
+    $id('pmo-ref-mis').innerHTML=`<span class="badge" style="background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);font-size:10px;padding:2px 8px;border-radius:99px">Mista ${mis}%</span>`;
+  }
+
+  // Equivalência — A=editável (inicia auto se vazio), B=100 fixo
+  if(pe_auto!=null){
+    if(!$id('perc_equiv_a').value) $id('perc_equiv_a').value=pe_auto;
+    $('pe-hint',`Tabela: ${dest.replace('_',' ')}, área ${N(ares)} m²`);
+  }
+
+  // Fator Social — A=editável (inicia auto se vazio), B=100 fixo
+  if(fs_auto!=null){
+    if(!$id('fator_social_a').value) $id('fator_social_a').value=fs_auto;
+    $('fs-hint',`Tabela: ${N(ares)} m² → ${fs_auto}%`);
+  }
+
+  // Concreto
+  if(dest){const uf=$id('uf').value;$('conc-pct',(uf&&CONC[uf]&&CONC[uf][dest]!=null)?N(CONC[uf][dest])+'%':'—');}
+
+  // Resumos
+  const pe_a_v=parseFloat($id('perc_equiv_a').value)||null;
+  const fs_a_v=parseFloat($id('fator_social_a').value)||null;
+  $('ps-pe-a',pe_a_v!=null?pe_a_v.toFixed(2)+'%':'—');
+  $('ps-pmo-a',pmo_auto!=null?pmo_auto.toFixed(2)+'%':'—');
+  $('ps-fs-a',fs_a_v!=null?fs_a_v.toFixed(2)+'%':'—');
+  $('ps-pe-b','100.00%');
+  $('ps-pmo-b',pmo_auto!=null?pmo_auto.toFixed(2)+'%':'—');
+  $('ps-fs-b','100.00%');
+}
+
+// ─── CÁLCULO PRINCIPAL (dual A/B) ────────────────────
+function calcular(){
+  const uf=$id('uf').value,dest=$id('dest').value,tipo=$id('tipo').value;
+  const ares=calcAreaResultante();
+  const vau=parseFloat($id('vau').value)||0;
+
+  // Atualizar display área resultante
+  const arEl=$id('area-res-display');
+  if(arEl) arEl.textContent=ares>0?N(ares)+' m²':'—';
+
+  // Atualizar parâmetros
+  if(dest||tipo||ares>0) atualizarParams(dest,tipo,ares);
+
+  // Parâmetros A (auto, readonly)
+  const pe_a=(parseFloat($id('perc_equiv_a').value)||0)/100;
+  const pmo_a=(parseFloat($id('pmo_val_a').value)||0)/100;
+  const fs_a=(parseFloat($id('fator_social_a').value)||0)/100;
+  // Parâmetros B (editáveis)
+  const pe_b=(parseFloat($id('perc_equiv_b').value)||0)/100;
+  const pmo_b=(parseFloat($id('pmo_val_b').value)||0)/100;
+  const fs_b=(parseFloat($id('fator_social_b').value)||0)/100;
+
+  // Atualizar resumo B
+  $('ps-pe-b',(pe_b*100).toFixed(2)+'%');
+  $('ps-pmo-b',(pmo_b*100).toFixed(2)+'%');
+  $('ps-fs-b',(fs_b*100).toFixed(2)+'%');
+
+  // Resetar se dados insuficientes
+  if(!uf||!dest||!ares||!vau){
+    ultimoINSS_a=0;ultimoINSS_b=0;ultimoRMT_a=0;ultimoRMT_b=0;
+    calcCom();return;
+  }
+
+  const ap=parseFloat($id('ap').value)||0;
+  const acr=(parseFloat($id('ac').value)||0)*0.5;
+  const adr=(parseFloat($id('ad').value)||0)*0.25;
+  const pc=CONC[uf]?.[dest]||0;
+  const comp_lbl=$id('comp').value.split('-').reverse().join('/').replace(/(\d{4})\/(\d{2})/,'$2/$1');
+
+  // ── Cálculo A ──
+  const aeq_a=ares*pe_a, custo_a=aeq_a*vau;
+  const dc_a=usaConc?custo_a*(pc/100):0, cdest_a=custo_a-dc_a;
+  const rmt_a=cdest_a*pmo_a*fs_a, inss_a=rmt_a*0.368;
+  ultimoINSS_a=inss_a;ultimoRMT_a=rmt_a;
+
+  // ── Cálculo B ──
+  const aeq_b=ares*pe_b, custo_b=aeq_b*vau;
+  const dc_b=usaConc?custo_b*(pc/100):0, cdest_b=custo_b-dc_b;
+  const rmt_b=cdest_b*pmo_b*fs_b, inss_b=rmt_b*0.368;
+  ultimoINSS_b=inss_b;ultimoRMT_b=rmt_b;
+
+  // Preencher memória A
+  const fA=(id,v)=>$(id,v);
+  fA('a_ap',N(ap)+' m²');fA('a_ac',N(acr)+' m²');fA('a_ad',N(adr)+' m²');
+  fA('a_ares',N(ares)+' m²');fA('a_feq',N(pe_a*100,2)+'%');fA('a_aeq',N(aeq_a)+' m²');
+  fA('a_comp_lbl','('+comp_lbl+')');fA('a_vau',R(vau));fA('a_custo',R(custo_a));
+  if(usaConc){fA('a_pconc',N(pc)+'%');fA('a_dconc',R(dc_a));fA('a_cdest',R(cdest_a));}
+  fA('a_pmo',N(pmo_a*100,2)+'%');fA('a_fs',N(fs_a*100,2)+'%');fA('a_rmt',R(rmt_a));fA('a_inss_linha',R(inss_a));
+  $('a_res_sem',R(inss_a));$('a_res_sub',`RMT: ${R(rmt_a)} · PMO ${(pmo_a*100).toFixed(1)}% × F.S. ${(fs_a*100).toFixed(1)}%`);
+
+  // Preencher memória B
+  fA('b_ap',N(ap)+' m²');fA('b_ac',N(acr)+' m²');fA('b_ad',N(adr)+' m²');
+  fA('b_ares',N(ares)+' m²');fA('b_feq',N(pe_b*100,2)+'%');fA('b_aeq',N(aeq_b)+' m²');
+  fA('b_comp_lbl','('+comp_lbl+')');fA('b_vau',R(vau));fA('b_custo',R(custo_b));
+  if(usaConc){fA('b_pconc',N(pc)+'%');fA('b_dconc',R(dc_b));fA('b_cdest',R(cdest_b));}
+  fA('b_pmo',N(pmo_b*100,2)+'%');fA('b_fs',N(fs_b*100,2)+'%');fA('b_rmt',R(rmt_b));fA('b_inss_linha',R(inss_b));
+  $('b_res_sem',R(inss_b));$('b_res_sub',`RMT: ${R(rmt_b)} · PMO ${(pmo_b*100).toFixed(1)}% × F.S. ${(fs_b*100).toFixed(1)}%`);
+
+  // Comparativo etapa 2
+  $('cmp_rmt_a',R(rmt_a));$('cmp_rmt_b',R(rmt_b));
+  $('cmp_inss_a',R(inss_a));$('cmp_inss_b',R(inss_b));
+  setDiff('cmp_rmt_diff',rmt_b-rmt_a);setDiff('cmp_inss_diff',inss_b-inss_a);
+
+  // RMT para etapa 3
+  $('rmt-para-proxima-a',R(rmt_a));$('rmt-para-proxima-b',R(rmt_b));
+
+  // Auto-preencher RMT na etapa 3
+  const ra=$id('c_rmt_a'),rb=$id('c_rmt_b');
+  if(ra&&!ra.dataset.me){ra.value=rmt_a.toFixed(2);$('rmt-from-sem-a',R(rmt_a));}
+  if(rb&&!rb.dataset.me){rb.value=rmt_b.toFixed(2);$('rmt-from-sem-b',R(rmt_b));}
+
+  // Visibilidade concreto nas memórias
+  ['a-rw-pc','a-rw-dc','a-rw-cd','b-rw-pc','b-rw-dc','b-rw-cd'].forEach(id=>{
+    const e=$id(id);if(e)e.style.display=usaConc?'':'none';
+  });
+
+  calcCom();
+}
+
+function setDiff(id,diff){
+  const e=$id(id);if(!e)return;
+  e.textContent=diff===0?'—':(diff>0?'+':'')+R(diff);
+  e.className='comp-val diff'+(diff>0?' pos':diff<0?' neg':'');
+}
+
+// ─── CÁLCULO COM VINCULAÇÃO (dual A/B) ─────────────────
+function fmtCel(v){return isNaN(v)||v==null?'—':v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+function addRow(){
+  rowC++;const id='mr'+rowC;
+  const inp=(ph,cls,onI)=>`<input type="number" placeholder="${ph}" min="0" step="0.01" class="${cls}" oninput="${onI}" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:6px 8px;color:var(--text);font-family:var(--sans);font-size:12px">`;
+  const d=document.createElement('div');d.className='mrow';d.id=id;
+  d.innerHTML=
+    `<input type="month" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:6px 8px;color:var(--text);font-family:var(--sans);font-size:12px">`+
+    inp('0,00','rem-inp','calcRowAndTotal("'+id+'")') +
+    inp('0,000','icm-inp','calcRowAndTotal("'+id+'")') +
+    `<div class="computed-cell" id="${id}_vatual">—</div>`+
+    `<div class="cpp-cell" id="${id}_cpp">—</div>`+
+    inp('0,00','multa-inp','calcRowAndTotal("'+id+'")') +
+    inp('0,00','juros-inp','calcRowAndTotal("'+id+'")') +
+    inp('0,00','maed-inp','calcRowAndTotal("'+id+'")') +
+    `<div class="total-cell" id="${id}_total">—</div>`+
+    `<button class="btn-del" onclick="document.getElementById('${id}').remove();calcCom()">×</button>`;
+  $id('monthly-rows').appendChild(d);
+  calcCom();
+}
+
+function calcRowAndTotal(id){
+  const row=$id(id);if(!row)return;
+  const rem=parseFloat(row.querySelector('.rem-inp').value)||0;
+  const icm=parseFloat(row.querySelector('.icm-inp').value)||0;
+  const vatual=rem*(1+icm/100);
+  const cpp=rem*0.20;
+  const multa=parseFloat(row.querySelector('.multa-inp').value)||0;
+  const juros=parseFloat(row.querySelector('.juros-inp').value)||0;
+  const maed=parseFloat(row.querySelector('.maed-inp').value)||0;
+  const total=cpp+multa+juros+maed;
+  $id(id+'_vatual').textContent=fmtCel(vatual);
+  $id(id+'_cpp').textContent=fmtCel(cpp);
+  $id(id+'_total').textContent=fmtCel(total);
+  calcCom();
+}
+
+function calcCom(){
+  const rmt_a=parseFloat($id('c_rmt_a')?.value)||0;
+  const rmt_b=parseFloat($id('c_rmt_b')?.value)||0;
+  const rec=parseFloat($id('c_rec').value)||0;
+
+  // Somar colunas da tabela mensal (compartilhado)
+  let tot_rem=0,tot_cpp=0,tot_extras=0,tot_ipg=0;
+  const rows=document.querySelectorAll('#monthly-rows .mrow');
+  rows.forEach(row=>{
+    const rem=parseFloat(row.querySelector('.rem-inp')?.value)||0;
+    const multa=parseFloat(row.querySelector('.multa-inp')?.value)||0;
+    const juros=parseFloat(row.querySelector('.juros-inp')?.value)||0;
+    const maed=parseFloat(row.querySelector('.maed-inp')?.value)||0;
+    const cpp=rem*0.20;
+    tot_rem+=rem;tot_cpp+=cpp;tot_extras+=multa+juros+maed;tot_ipg+=cpp+multa+juros+maed;
+  });
+  const temRemuneracoes=rows.length>0&&tot_rem>0;
+  const ipg=tot_ipg;
+
+  // Atualizar display da tabela
+  $('c_tot',R(tot_rem));$('c_cpp',R(tot_cpp));$('c_extras',R(tot_extras));$('c_ipg_tot',R(ipg));
+
+  // ── Apuração A (com deduções) ──
+  const deve_a=ultimoINSS_a;
+  // INSS a Recolher: se há remunerações → usa ipg; senão → usa deve_a (fallback etapa 2)
+  const inss_recolher_a=temRemuneracoes?ipg:deve_a;
+  const eco_a=deve_a>0&&temRemuneracoes?deve_a-ipg:0;
+  const pct_a=deve_a>0&&eco_a>0?eco_a/deve_a*100:0;
+
+  $('rmt-from-sem-a',R(rmt_a));$('ca_r1',R(rmt_a));$('ca_r2',R(rmt_a*0.5));
+  $('ca_r3',R(tot_cpp));$('ca_r4',R(tot_extras));$('ca_ipg',temRemuneracoes?R(ipg):'Informe remunerações');
+  $('ca_sd',deve_a>0?R(deve_a):'—');
+  $('ca_sp',temRemuneracoes?R(ipg):'—');
+  $('ca_se',deve_a>0&&temRemuneracoes?R(eco_a):'—');
+  $('ca_spct',pct_a>0?`${pct_a.toFixed(1)}% de economia`:'');
+  $('ca_eco',deve_a>0&&temRemuneracoes?R(eco_a):'R$ —');
+  $('ca_eco_pct',pct_a>0?`${pct_a.toFixed(1)}% do INSS Devido`:'—');
+  $('ca_eco_real',deve_a>0&&temRemuneracoes?R(eco_a):'R$ —');
+  $('ca_res',R(inss_recolher_a));
+  $('ca_sub',temRemuneracoes?`CPP: ${R(tot_cpp)} + extras: ${R(tot_extras)}`:'Sem remunerações — valor base da Etapa 2');
+
+  // ── Apuração B (padrão tabela — sem economia, é a referência) ──
+  const deve_b=ultimoINSS_b;
+  const inss_recolher_b=temRemuneracoes?ipg:deve_b;
+
+  $('rmt-from-sem-b',R(rmt_b));$('cb_r1',R(rmt_b));$('cb_r2',R(rmt_b*0.5));
+  $('cb_r3',R(tot_cpp));$('cb_r4',R(tot_extras));$('cb_ipg',temRemuneracoes?R(ipg):'Informe remunerações');
+  $('cb_sd',deve_b>0?R(deve_b):'—');
+  $('cb_sp',temRemuneracoes?R(ipg):'—');
+  // B (padrão) não mostra economia — é a base de referência
+  $('cb_se','—');$('cb_spct','Referência — sem economia');
+  $('cb_eco','—');$('cb_eco_pct','Cálculo B é a base de comparação');
+  $('cb_eco_real','—');
+  $('cb_res',R(inss_recolher_b));
+  $('cb_sub',temRemuneracoes?`CPP: ${R(tot_cpp)} + extras: ${R(tot_extras)}`:'Sem remunerações — valor base da Etapa 2');
+
+  // ── Comparativo final ──
+  // A economia real é A comparado com B (quanto A economiza vs B)
+  const eco_ab=deve_b>0&&deve_a>0?deve_b-deve_a:0;
+  const pct_ab=deve_b>0&&eco_ab>0?eco_ab/deve_b*100:0;
+
+  $('cmp3_deve_a',R(deve_a));$('cmp3_deve_b',R(deve_b));setDiff('cmp3_deve_diff',deve_b-deve_a);
+  $('cmp3_ipg_a',temRemuneracoes?R(ipg):'—');
+  $('cmp3_ipg_b',temRemuneracoes?R(ipg):'—');
+  $('cmp3_ipg_diff',temRemuneracoes?'Igual':'—');
+
+  if(deve_a>0&&deve_b>0){
+    // Economia de A vs B (A tem parâmetros menores, portanto INSS menor)
+    $('cmp3_eco_a',R(eco_a>0?eco_a:0));
+    $('cmp3_eco_b','— (referência)');
+    setDiff('cmp3_eco_diff',eco_ab);
+    $('cmp3_eral_a',R(eco_a>0?eco_a:0));
+    $('cmp3_eral_b','— (referência)');
+    setDiff('cmp3_eral_diff',eco_ab);
+  } else {
+    $('cmp3_eco_a','—');$('cmp3_eco_b','—');$('cmp3_eco_diff','—');
+    $('cmp3_eral_a','—');$('cmp3_eral_b','—');$('cmp3_eral_diff','—');
+  }
+
+  // Alerta de remunerações não informadas
+  const avisoEl=$id('c_diff');
+  if(!temRemuneracoes&&(deve_a>0||deve_b>0)){
+    avisoEl.style.display='block';
+    avisoEl.innerHTML='<div class="alert info" style="font-size:12px">⚠️ Adicione remunerações mensais para calcular o INSS a Pagar com vinculação. Enquanto não informadas, o INSS a Recolher exibido é o valor apurado na Etapa 2.</div>';
+  } else if(rec>0||ipg>0){
+    const d=ipg-rec,cls=d>0.01?'error':d<-0.01?'success':'info';
+    const msg=d>0.01?`Diferença a recolher: <strong>${R(d)}</strong>`:d<-0.01?`Saldo a favor: <strong>${R(Math.abs(d))}</strong>`:'INSS recolhido cobre o valor apurado.';
+    avisoEl.style.display='block';avisoEl.innerHTML=`<div class="alert ${cls}">${msg}</div>`;
+  } else avisoEl.style.display='none';
+}
+
+// Marcar RMT A/B como editado manualmente
+$id('c_rmt_a')?.addEventListener('input',function(){this.dataset.me='1';calcCom();});
+$id('c_rmt_b')?.addEventListener('input',function(){this.dataset.me='1';calcCom();});
+
+// ─── NAVEGAÇÃO ────────────────────────────────────────
+let sidebarCollapsed=false;
+function toggleSidebar(){
+  sidebarCollapsed=!sidebarCollapsed;
+  $id('app').classList.toggle('sidebar-collapsed',sidebarCollapsed);
+}
+
+// ── FIREBASE AUTH & CLIENTES ────────────────────────
+let _currentUser=null, _loginMode='login';
+const fb=()=>window._fb;
+const db=()=>window._db;
+const dbFns=()=>window._fb?.db;
+const fbOk=()=>!!window._fbReady&&!!window._fb;
+
+// Aguardar Firebase (sem timeout — espera indefinidamente)
+function esperarFb(){
+  if(window._fbReady)return Promise.resolve();
+  return new Promise(res=>window.addEventListener('fbReady',res,{once:true}));
+}
+
+// Aguardar Firebase estar pronto (máx 6s)
+async function esperarFb(){
+  if(window._fbReady)return;
+  await new Promise((res,rej)=>{
+    const t=setTimeout(()=>rej(new Error('timeout')),6000);
+    window.addEventListener('fbReady',()=>{clearTimeout(t);res();},{once:true});
+  });
+}
+
+async function doResetSenha(){
+  const email=$id('login-email').value.trim();
+  if(!email){$('login-err','Informe o e-mail para redefinir a senha.');return;}
+  try{
+    await esperarFb();
+    await fb().sendPasswordResetEmail(email);
+    const el=$id('login-err');
+    el.style.color='var(--green2)';
+    el.textContent='✓ E-mail de redefinição enviado. Verifique sua caixa.';
+    setTimeout(()=>{el.style.color='';el.textContent='';},5000);
+  }catch(e){
+    const msgs={'auth/user-not-found':'E-mail não encontrado.','auth/invalid-email':'E-mail inválido.'};
+    $('login-err',msgs[e.code]||'Erro: '+e.message);
+  }
+}
+
+async function doLogin(){
+  const email=$id('login-email').value.trim();
+  const pass=$id('login-pass').value;
+  const btn=$id('login-btn-main');
+  $('login-err','');
+  if(!email||!pass){$('login-err','Preencha e-mail e senha.');return;}
+  btn.textContent='Aguarde...';btn.disabled=true;
+  try{
+    await esperarFb();
+    const lembrar=$id('login-lembrar')?.checked||false;
+    if(window._setPersistence) await fb().setPersistence(lembrar);
+    if(_loginMode==='login'){
+      await fb().signInWithEmailAndPassword(email,pass);
+    } else {
+      await fb().createUserWithEmailAndPassword(email,pass);
+    }
+  }catch(e){
+    const msgs={'auth/invalid-email':'E-mail inválido.','auth/user-not-found':'Usuário não encontrado.',
+      'auth/wrong-password':'Senha incorreta.','auth/email-already-in-use':'E-mail já cadastrado.',
+      'auth/weak-password':'Senha muito fraca (mín. 6 caracteres).',
+      'auth/invalid-credential':'E-mail ou senha inválidos.'};
+    $('login-err',msgs[e.code]||'Erro: '+e.message);
+  }finally{btn.textContent=_loginMode==='login'?'Entrar':'Criar conta';btn.disabled=false;}
+}
+
+function toggleLoginMode(){
+  _loginMode=_loginMode==='login'?'register':'login';
+  const isR=_loginMode==='register';
+  $id('login-btn-main').textContent=isR?'Criar conta':'Entrar';
+  $id('login-toggle').innerHTML=isR?'Já tem conta? <span id="toggle-login-mode">Entrar</span>':'Não tem conta? <span id="toggle-login-mode">Criar conta</span>';
+}
+
+async function doLogout(){if(fbOk())await fb().signOut();}
+
+// ── ALTERAR SENHA (dentro do sistema) ──
+function abrirModalSenha(){
+  let modal=$id('modal-senha');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='modal-senha';
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;display:flex;align-items:center;justify-content:center';
+    const temEmail=_currentUser?.providerData?.some(p=>p.providerId==='password');
+    modal.innerHTML=`
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem;width:100%;max-width:360px;display:flex;flex-direction:column;gap:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-family:var(--serif);font-size:1.1rem">${temEmail?'Alterar senha':'Definir senha'}</div>
+        <button onclick="$id('modal-senha').remove()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px 8px">✕</button>
+      </div>
+      ${temEmail?`<div class="login-field"><label>Senha atual</label><input type="password" id="ms-atual" placeholder="Senha atual"></div>`:''}
+      <div class="login-field"><label>Nova senha</label><input type="password" id="ms-nova" placeholder="Mínimo 6 caracteres"></div>
+      <div class="login-field"><label>Confirmar nova senha</label><input type="password" id="ms-conf" placeholder="Repita a nova senha"></div>
+      <div id="ms-err" style="font-size:12px;color:var(--red);min-height:14px"></div>
+      <button onclick="confirmarAlterarSenha(${temEmail})" style="background:var(--accent);color:#fff;border:none;border-radius:var(--r2);padding:11px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer">
+        ${temEmail?'Alterar senha':'Definir senha'}
+      </button>
+    </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+  } else {
+    modal.style.display='flex';
+  }
+}
+
+async function confirmarAlterarSenha(temSenhaAtual){
+  const nova=$id('ms-nova')?.value||'';
+  const conf=$id('ms-conf')?.value||'';
+  const err=id=>{const e=$id('ms-err');if(e)e.textContent=id;};
+  if(nova.length<6){err('Senha deve ter pelo menos 6 caracteres.');return;}
+  if(nova!==conf){err('As senhas não coincidem.');return;}
+  try{
+    if(temSenhaAtual){
+      const atual=$id('ms-atual')?.value||'';
+      if(!atual){err('Informe a senha atual.');return;}
+      await fb().reauthAndUpdate(atual,nova);
+    } else {
+      await fb().updatePassword(nova);
+    }
+    $id('modal-senha')?.remove();
+    showToast('✓ Senha '+(temSenhaAtual?'alterada':'definida')+' com sucesso');
+    // Atualizar barra de aviso
+    const sb=$id('senha-def-bar');if(sb)sb.style.display='none';
+  }catch(e){
+    const msgs={'auth/wrong-password':'Senha atual incorreta.','auth/weak-password':'Senha muito fraca.',
+      'auth/requires-recent-login':'Faça login novamente para alterar a senha.'};
+    err(msgs[e.code]||'Erro: '+e.message);
+  }
+}
+
+// Auth state — mostrar/ocultar login e sincronizar _currentUser
+window.addEventListener('fbAuthChange',e=>{
+  _currentUser=e.detail.user;
+  const ls=$id('login-screen');
+  if(e.detail.user){
+    // Usuário logado — ocultar tela de login
+    if(ls)ls.style.display='none';
+    const u=e.detail.user;
+    $('user-email',u.email);
+    $('user-avatar',u.email.charAt(0).toUpperCase());
+    const temSoGoogle=u.providerData.length>0&&u.providerData.every(p=>p.providerId==='google.com');
+    const sb=$id('senha-def-bar');
+    if(sb)sb.style.display=temSoGoogle?'flex':'none';
+  } else {
+    // Não logado — mostrar tela de login
+    if(ls)ls.style.display='flex';
+  }
+});
+
+// ── DATA HOJE no campo contratante ──
+(function(){
+  const d=new Date();
+  const f=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  const el=$id('c_data');if(el)el.value=f;
+})();
+
+// ── PAINEL DE CLIENTES ──
+function openPanel(){
+  $id('client-panel').classList.add('on');
+  $id('panel-overlay').classList.add('on');
+  switchPanelTab('clientes');
+}
+function closePanel(){
+  $id('client-panel').classList.remove('on');
+  $id('panel-overlay').classList.remove('on');
+}
+function switchPanelTab(tab){
+  ['clientes','relatorios','novo'].forEach(t=>{
+    $id('tab-'+t).classList.toggle('on',t===tab);
+  });
+  if(tab==='clientes')renderClientes();
+  else if(tab==='relatorios')renderRelatorios();
+  else renderFormNovoCliente();
+}
+
+function renderFormNovoCliente(){
+  $id('cp-body').innerHTML=`
+  <div class="cp-form">
+    <div class="cp-row"><div class="cp-field"><label>Nome *</label><input type="text" id="nc_nome" placeholder="Nome completo"></div>
+    <div class="cp-field"><label>CPF/CNPJ</label><input type="text" id="nc_cpf" placeholder="000.000.000-00"></div></div>
+    <div class="cp-row"><div class="cp-field"><label>Cidade</label><input type="text" id="nc_cidade" placeholder="Cidade"></div>
+    <div class="cp-field"><label>UF</label><input type="text" id="nc_uf" placeholder="BA" maxlength="2"></div></div>
+    <div class="cp-row full"><div class="cp-field"><label>Endereço</label><input type="text" id="nc_end" placeholder="Logradouro, número, bairro"></div></div>
+    <div class="cp-row"><div class="cp-field"><label>Identificação</label><input type="text" id="nc_proc" placeholder="Nº processo"></div>
+    <div class="cp-field"><label>Telefone</label><input type="text" id="nc_tel" placeholder="(00) 00000-0000"></div></div>
+    <div id="cp-msg" class="cp-msg"></div>
+    <button class="cp-save" onclick="salvarNovoCliente()">Salvar cliente</button>
+  </div>`;
+}
+
+async function salvarNovoCliente(){
+  const nome=$id('nc_nome')?.value.trim();
+  if(!nome){$('cp-msg','Nome é obrigatório.');return;}
+  const dados={nome,cpfcnpj:$id('nc_cpf')?.value||'',cidade:$id('nc_cidade')?.value||'',
+    uf:$id('nc_uf')?.value||'',endereco:$id('nc_end')?.value||'',
+    processo:$id('nc_proc')?.value||'',telefone:$id('nc_tel')?.value||'',
+    uid:_currentUser?.uid||'anon',criadoEm:dbFns()?.serverTimestamp?.()};
+  try{
+    await dbFns().addDoc(dbFns().collection(db(),'clientes'),dados);
+    $('cp-msg','✓ Cliente salvo!');
+    setTimeout(()=>switchPanelTab('clientes'),1200);
+  }catch(e){$('cp-msg','Erro: '+e.message);}
+}
+
+async function renderClientes(){
+  const body=$id('cp-body');
+  body.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem">Carregando...</div>';
+  try{
+    const uid=_currentUser?.uid||'anon';
+    const q=dbFns().query(dbFns().collection(db(),'clientes'),dbFns().where('uid','==',uid));
+    const snap=await dbFns().getDocs(q);
+    if(snap.empty){body.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:12px">Nenhum cliente cadastrado ainda.</div>';return;}
+    body.innerHTML='';
+    snap.forEach(d=>{
+      const c=d.data();
+      const card=document.createElement('div');card.className='cli-card';
+      card.innerHTML=`<div class="cli-name">${c.nome}</div>
+        <div class="cli-meta">${[c.cpfcnpj,c.cidade,c.uf].filter(Boolean).join(' · ')}</div>
+        ${c.processo?`<div class="cli-meta" style="margin-top:2px">Proc: ${c.processo}</div>`:''}
+        <div class="cli-actions">
+          <button class="cli-btn primary" onclick="carregarCliente('${d.id}')">Carregar</button>
+          <button class="cli-btn danger" onclick="excluirCliente('${d.id}',this)">Excluir</button>
+        </div>`;
+      body.appendChild(card);
+    });
+  }catch(e){body.innerHTML=`<div style="color:var(--red);font-size:12px;padding:1rem">${e.message}</div>`;}
+}
+
+async function carregarCliente(id){
+  try{
+    const snap=await dbFns().getDoc(dbFns().doc(db(),'clientes',id));
+    if(!snap.exists())return;
+    const c=snap.data();
+    const s=(eid,v)=>{const e=$id(eid);if(e)e.value=v||'';};
+    s('c_nome',c.nome);s('c_cpfcnpj',c.cpfcnpj);s('c_cidade',c.cidade);
+    s('c_endereco',c.endereco);s('c_processo',c.processo);
+    // UF da obra
+    if(c.uf){const sel=$id('uf');if(sel){sel.value=c.uf;autoVAU();calcular();}}
+    closePanel();
+    $('c_saved_msg','✓ Cliente carregado');
+    setTimeout(()=>$('c_saved_msg',''),3000);
+  }catch(e){alert('Erro ao carregar cliente: '+e.message);}
+}
+
+async function excluirCliente(id,btn){
+  if(!confirm('Excluir este cliente?'))return;
+  btn.textContent='...';
+  try{await dbFns().deleteDoc(dbFns().doc(db(),'clientes',id));renderClientes();}
+  catch(e){alert('Erro: '+e.message);}
+}
+
+// ── SALVAR RELATÓRIO ──
+async function salvarRelatorio(){
+  if(!_currentUser){showToast('⚠️ Faça login para salvar simulações.');return;}
+
+  // Coletar TODOS os dados da simulação atual
+  const destNomes={'res_uni':'Residencial Unifamiliar','res_multi':'Residencial Multifamiliar',
+    'comercial':'Comercial Salas e Lojas','garagens':'Edifício de Garagens','galpao':'Galpão Industrial',
+    'casa_pop':'Casa Popular','conj_hab':'Conjunto Habitacional Popular'};
+  const tipoNomes={'alvenaria':'Alvenaria','madeira':'Madeira','mista':'Mista'};
+  const comp=$id('comp')?.value||'';
+  const [ano,mes]=comp.split('-');
+  const now=new Date();
+
+  const dados={
+    // Metadados
+    titulo:$id('c_nome')?.value||'Simulação sem nome',
+    dataSimulacao:`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`,
+    // Contratante
+    contratante:{
+      nome:$id('c_nome')?.value||'',
+      cpfcnpj:$id('c_cpfcnpj')?.value||'',
+      cidade:$id('c_cidade')?.value||'',
+      endereco:$id('c_endereco')?.value||'',
+      processo:$id('c_processo')?.value||'',
+      data:$id('c_data')?.value||''
+    },
+    // Obra
+    obra:{
+      uf:$id('uf')?.value||'',
+      dest:$id('dest')?.value||'',
+      destNome:destNomes[$id('dest')?.value]||$id('dest')?.value||'',
+      tipo:$id('tipo')?.value||'',
+      tipoNome:tipoNomes[$id('tipo')?.value]||$id('tipo')?.value||'',
+      ap:$id('ap')?.value||'0',
+      ac:$id('ac')?.value||'0',
+      ad:$id('ad')?.value||'0',
+      vau:$id('vau')?.value||'0',
+      comp,
+      compLabel:comp&&mes?`${MESES_PT[parseInt(mes)-1]}/${ano}`:'—',
+      usaConcreto:usaConc
+    },
+    // Parâmetros
+    params:{
+      peq_a:$id('perc_equiv_a')?.value||'',
+      pmo_a:$id('pmo_val_a')?.value||'',
+      fs_a:$id('fator_social_a')?.value||'',
+      peq_b:'100', pmo_b:$id('pmo_val_b')?.value||'', fs_b:'100'
+    },
+    // Resultados Etapa 2
+    etapa2:{
+      ares:$id('area-res-display')?.textContent||'—',
+      // Cálculo A
+      aeq_a:$id('a_aeq')?.textContent||'—',
+      custo_a:$id('a_custo')?.textContent||'—',
+      rmt_a:$id('a_rmt')?.textContent||'—',
+      inss_a:$id('a_res_sem')?.textContent||'—',
+      // Cálculo B
+      aeq_b:$id('b_aeq')?.textContent||'—',
+      custo_b:$id('b_custo')?.textContent||'—',
+      rmt_b:$id('b_rmt')?.textContent||'—',
+      inss_b:$id('b_res_sem')?.textContent||'—'
+    },
+    // Resultados Etapa 3 (com vinculação)
+    etapa3:{
+      inss_devido_a:$id('ca_sd')?.textContent||'—',
+      inss_pagar_a:$id('ca_ipg')?.textContent||'—',
+      economia_a:$id('ca_eco')?.textContent||'—',
+      eco_pct_a:$id('ca_eco_pct')?.textContent||'—',
+      inss_devido_b:$id('cb_sd')?.textContent||'—',
+      inss_pagar_b:$id('cb_ipg')?.textContent||'—',
+      rmt_a:$id('c_rmt_a')?.value||'',
+      rmt_b:$id('c_rmt_b')?.value||'',
+      tot_rem:$id('c_tot')?.textContent||'—',
+      tot_cpp:$id('c_cpp')?.textContent||'—',
+      tot_extras:$id('c_extras')?.textContent||'—',
+      ipg:$id('c_ipg_tot')?.textContent||'—',
+      rec:$id('c_rec')?.value||'',
+      // Remunerações mensais
+      remuneracoes:(()=>{
+        const rows=[];
+        document.querySelectorAll('#monthly-rows .mrow').forEach(row=>{
+          rows.push({
+            mes:row.querySelector('input[type=month]')?.value||'',
+            rem:row.querySelector('.rem-inp')?.value||'0',
+            icm:row.querySelector('.icm-inp')?.value||'0',
+            multa:row.querySelector('.multa-inp')?.value||'0',
+            juros:row.querySelector('.juros-inp')?.value||'0',
+            maed:row.querySelector('.maed-inp')?.value||'0'
+          });
+        });
+        return rows;
+      })()
+    },
+    uid:_currentUser.uid,
+    criadoEm:dbFns().serverTimestamp()
+  };
+
+  try{
+    const ref=await dbFns().addDoc(dbFns().collection(db(),'relatorios'),dados);
+    showToast('✓ Simulação salva com sucesso!');
+    // Abrir painel na aba de relatórios
+    openPanel();
+    switchPanelTab('relatorios');
+  }catch(e){showToast('Erro ao salvar: '+e.message);}
+}
+
+async function renderRelatorios(){
+  const body=$id('cp-body');
+  if(!_currentUser){body.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:12px">Faça login para ver os relatórios.</div>';return;}
+  body.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem">Carregando...</div>';
+  try{
+    const q=dbFns().query(
+      dbFns().collection(db(),'relatorios'),
+      dbFns().where('uid','==',_currentUser.uid)
+    );
+    const snap=await dbFns().getDocs(q);
+    if(snap.empty){
+      body.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:12px">Nenhuma simulação salva ainda.<br><br><span style="font-size:11px">Use "Salvar simulação" na sidebar para registrar.</span></div>';
+      return;
+    }
+    // Ordenar por data no cliente (mais recente primeiro)
+    const docs=[];snap.forEach(d=>docs.push({id:d.id,...d.data()}));
+    docs.sort((a,b)=>{
+      const ta=a.criadoEm?.seconds||0, tb=b.criadoEm?.seconds||0;
+      return tb-ta;
+    });
+    body.innerHTML='';
+    docs.forEach(r=>{
+      const o=r.obra||{};const c=r.contratante||{};const e2=r.etapa2||{};const e3=r.etapa3||{};
+      const card=document.createElement('div');
+      card.className='cli-card';
+      card.innerHTML=`
+        <div class="cli-name">${c.nome||r.titulo||'Sem nome'}</div>
+        <div class="cli-meta" style="margin-top:3px">
+          ${[o.uf, o.destNome||o.dest, o.compLabel||o.comp].filter(Boolean).join(' · ')}
+        </div>
+        <div class="cli-meta" style="margin-top:3px">
+          <span style="color:var(--accent2)">A: ${e2.inss_a||'—'}</span>
+          &nbsp;·&nbsp;
+          <span style="color:var(--amber)">B: ${e2.inss_b||'—'}</span>
+        </div>
+        ${e3.economia_a&&e3.economia_a!=='—'?`<div class="cli-meta" style="margin-top:2px;color:var(--green2)">Economia (A): ${e3.economia_a} — ${e3.eco_pct_a||''}</div>`:''}
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">${r.dataSimulacao||''}</div>
+        <div class="cli-actions" style="margin-top:.625rem">
+          <button class="cli-btn primary" onclick="carregarRelatorio('${r.id}')">Carregar</button>
+          <button class="cli-btn primary" style="border-color:rgba(16,185,129,.3);color:var(--green2)" onclick="gerarPDFSimulacao('${r.id}')">PDF</button>
+          <button class="cli-btn danger" onclick="excluirRelatorio('${r.id}',this)">Excluir</button>
+        </div>`;
+      body.appendChild(card);
+    });
+  }catch(e){
+    body.innerHTML=`<div style="color:var(--red);font-size:12px;padding:1rem">Erro: ${e.message}</div>`;
+  }
+}
+
+async function gerarPDFSimulacao(id){
+  try{
+    const snap=await dbFns().getDoc(dbFns().doc(db(),'relatorios',id));
+    if(!snap.exists()){showToast('Simulação não encontrada.');return;}
+    const r=snap.data();
+    const c=r.contratante||{};const o=r.obra||{};
+    const p=r.params||{};const e2=r.etapa2||{};const e3=r.etapa3||{};
+
+    const linha=(label,val,bold=false)=>
+      `<tr><td style="padding:5px 8px;color:#555;border-bottom:1px solid #e5e7eb">${label}</td>
+       <td style="padding:5px 8px;font-weight:${bold?'600':'400'};text-align:right;border-bottom:1px solid #e5e7eb">${val||'—'}</td></tr>`;
+
+    const html=`<!DOCTYPE html><html lang="pt-BR"><head>
+    <meta charset="UTF-8">
+    <title>Simulação — ${c.nome||'INSS de Obra'}</title>
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#111;background:#fff;padding:2cm}
+      h1{font-size:18px;font-weight:700;margin-bottom:4px}
+      h2{font-size:13px;font-weight:600;color:#3b82f6;text-transform:uppercase;letter-spacing:.06em;margin:1.25rem 0 .5rem}
+      .sub{font-size:11px;color:#666;margin-bottom:1rem}
+      .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #111;padding-bottom:1rem;margin-bottom:1rem}
+      .meta{text-align:right;font-size:11px;color:#555;line-height:1.8}
+      table{width:100%;border-collapse:collapse;margin-bottom:.75rem}
+      .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+      .card{border:1px solid #e5e7eb;border-radius:6px;padding:.875rem;break-inside:avoid}
+      .card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:.5rem;padding-bottom:.4rem;border-bottom:1px solid #f3f4f6}
+      .card-title.a{color:#3b82f6}.card-title.b{color:#d97706}
+      .big{font-size:20px;font-weight:700;margin:.25rem 0}
+      .big.a{color:#3b82f6}.big.b{color:#d97706}.big.green{color:#10b981}
+      .label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em}
+      .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin:.75rem 0}
+      .stat{background:#f9fafb;border:1px solid #e5e7eb;border-radius:4px;padding:.5rem;text-align:center}
+      .stat .v{font-size:14px;font-weight:600}
+      .stat .v.red{color:#ef4444}.stat .v.amber{color:#d97706}.stat .v.green{color:#10b981}
+      @page{margin:1.5cm;size:A4}
+      @media print{body{padding:0}}
+    </style></head><body>
+    <div class="header">
+      <div>
+        <h1>Relatório de Aferição Indireta de Obras</h1>
+        <div class="sub">Sistema INSS de Obra — IN RFB nº 2.021/2021</div>
+      </div>
+      <div class="meta">
+        <div>Emitido em: <strong>${r.dataSimulacao||'—'}</strong></div>
+        <div>Competência: <strong>${o.compLabel||o.comp||'—'}</strong></div>
+        ${c.processo?`<div>Processo: <strong>${c.processo}</strong></div>`:''}
+      </div>
+    </div>
+
+    <h2>Dados do Contratante</h2>
+    <table>
+      ${linha('Nome',c.nome,true)}
+      ${linha('CPF/CNPJ',c.cpfcnpj)}
+      ${c.cidade?linha('Cidade',c.cidade):''}
+      ${c.endereco?linha('Endereço da obra',c.endereco):''}
+    </table>
+
+    <h2>Identificação da Obra</h2>
+    <table>
+      ${linha('UF',o.uf,true)}
+      ${linha('Destinação',o.destNome||o.dest,true)}
+      ${linha('Tipo Construtivo',o.tipoNome||o.tipo)}
+      ${linha('Área Principal',`${o.ap} m²`)}
+      ${o.ac&&o.ac!=='0'?linha('Área Coberta',`${o.ac} m²`):''}
+      ${o.ad&&o.ad!=='0'?linha('Área Descoberta',`${o.ad} m²`):''}
+      ${linha('Área Resultante',e2.ares,true)}
+      ${linha('VAU',`R$ ${parseFloat(o.vau).toLocaleString('pt-BR',{minimumFractionDigits:2})}`)}
+    </table>
+
+    <h2>Etapa 2 — Aferição sem Vinculação</h2>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title a">Cálculo A — Com Deduções</div>
+        <div class="label">Equivalência ${p.peq_a||'—'}% · PMO ${p.pmo_a||'—'}% · F.Social ${p.fs_a||'—'}%</div>
+        <table style="margin-top:.625rem">
+          ${linha('Área Equivalente',e2.aeq_a)}
+          ${linha('Custo de Obra',e2.custo_a)}
+          ${linha('RMT',e2.rmt_a,true)}
+          ${linha('INSS (36,80%)',e2.inss_a,true)}
+        </table>
+        <div class="label" style="margin-top:.5rem">INSS Apurado — Cálculo A</div>
+        <div class="big a">${e2.inss_a||'—'}</div>
+      </div>
+      <div class="card">
+        <div class="card-title b">Cálculo B — Padrão Tabela</div>
+        <div class="label">Equivalência 100% · PMO ${p.pmo_b||'—'}% · F.Social 100%</div>
+        <table style="margin-top:.625rem">
+          ${linha('Área Equivalente',e2.aeq_b)}
+          ${linha('Custo de Obra',e2.custo_b)}
+          ${linha('RMT',e2.rmt_b,true)}
+          ${linha('INSS (36,80%)',e2.inss_b,true)}
+        </table>
+        <div class="label" style="margin-top:.5rem">INSS Apurado — Cálculo B</div>
+        <div class="big b">${e2.inss_b||'—'}</div>
+      </div>
+    </div>
+
+    ${e3.inss_devido_a&&e3.inss_devido_a!=='—'?`
+    <h2 style="margin-top:1.5rem">Etapa 3 — Aferição com Vinculação</h2>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title a">Apuração A — Com Deduções</div>
+        <div class="stats">
+          <div class="stat"><div class="label">INSS Devido</div><div class="v red">${e3.inss_devido_a}</div></div>
+          <div class="stat"><div class="label">INSS a Pagar</div><div class="v amber">${e3.inss_pagar_a}</div></div>
+          <div class="stat"><div class="label">Economia</div><div class="v green">${e3.economia_a}</div></div>
+        </div>
+        ${e3.eco_pct_a?`<div class="label">${e3.eco_pct_a}</div>`:''}
+      </div>
+      <div class="card">
+        <div class="card-title b">Apuração B — Padrão Tabela</div>
+        <div class="stats">
+          <div class="stat"><div class="label">INSS Devido</div><div class="v red">${e3.inss_devido_b}</div></div>
+          <div class="stat"><div class="label">INSS a Pagar</div><div class="v amber">${e3.inss_pagar_b}</div></div>
+          <div class="stat"><div class="label">Economia</div><div class="v">—</div></div>
+        </div>
+        <div class="label">Cálculo B é a base de referência</div>
+      </div>
+    </div>
+    `:''}
+
+    <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid #e5e7eb;font-size:10px;color:#9ca3af;text-align:center">
+      Documento gerado pelo sistema INSS de Obra · ${r.dataSimulacao||'—'} · Usuário: ${_currentUser?.email||'—'}
+    </div>
+    </body></html>`;
+
+    const w=window.open('','_blank','width=900,height=700');
+    if(!w){showToast('⚠️ Permita popups para gerar o PDF.');return;}
+    w.document.write(html);
+    w.document.close();
+    setTimeout(()=>{w.focus();w.print();},600);
+  }catch(e){showToast('Erro ao gerar PDF: '+e.message);}
+}
+
+async function carregarRelatorio(id){
+  try{
+    const snap=await dbFns().getDoc(dbFns().doc(db(),'relatorios',id));
+    if(!snap.exists())return;
+    const r=snap.data();
+    const o=r.obra||{},c=r.contratante||{},p=r.params||{},e3=r.etapa3||{};
+    const s=(eid,v)=>{const e=$id(eid);if(e)e.value=v||'';};
+    // Contratante
+    s('c_nome',c.nome);s('c_cpfcnpj',c.cpfcnpj);s('c_cidade',c.cidade);
+    s('c_endereco',c.endereco);s('c_processo',c.processo);s('c_data',c.data);
+    // Obra
+    s('ap',o.ap);s('ac',o.ac);s('ad',o.ad);s('vau',o.vau);
+    if(o.uf){const e=$id('uf');if(e)e.value=o.uf;}
+    if(o.dest){const e=$id('dest');if(e)e.value=o.dest;}
+    if(o.tipo){const e=$id('tipo');if(e)e.value=o.tipo;}
+    if(o.comp){const e=$id('comp');if(e){e.value=o.comp;atualizarBadgeComp();}}
+    if(typeof o.usaConcreto==='boolean')setConcreto(o.usaConcreto);
+    // Parâmetros
+    s('perc_equiv_a',p.peq_a);s('pmo_val_a',p.pmo_a);s('fator_social_a',p.fs_a);
+    // Recalcular etapa 1 e 2
+    calcular();
+    // Restaurar RMT editados da etapa 3
+    if(e3.rmt_a)s('c_rmt_a',e3.rmt_a);
+    if(e3.rmt_b)s('c_rmt_b',e3.rmt_b);
+    // Restaurar remunerações mensais
+    $id('monthly-rows').innerHTML='';
+    rowC=0;
+    if(e3.remuneracoes?.length){
+      e3.remuneracoes.forEach(m=>{
+        addRow();
+        const id='mr'+rowC;const row=$id(id);if(!row)return;
+        const mesEl=row.querySelector('input[type=month]');if(mesEl)mesEl.value=m.mes||'';
+        const rem=row.querySelector('.rem-inp');if(rem)rem.value=m.rem||'0';
+        const icm=row.querySelector('.icm-inp');if(icm)icm.value=m.icm||'0';
+        const multa=row.querySelector('.multa-inp');if(multa)multa.value=m.multa||'0';
+        const juros=row.querySelector('.juros-inp');if(juros)juros.value=m.juros||'0';
+        const maed=row.querySelector('.maed-inp');if(maed)maed.value=m.maed||'0';
+        calcRowAndTotal(id);
+      });
+    }
+    // INSS já recolhido
+    if(e3.rec)s('c_rec',e3.rec);
+    calcCom();
+    closePanel();
+    goStep(1);
+    showToast('✓ Simulação carregada com sucesso');
+  }catch(e){showToast('Erro ao carregar: '+e.message);}
+}
+
+async function excluirRelatorio(id,btn){
+  if(!confirm('Excluir este relatório?'))return;
+  btn.textContent='...';
+  try{await dbFns().deleteDoc(dbFns().doc(db(),'relatorios',id));renderRelatorios();}
+  catch(e){alert('Erro: '+e.message);}
+}
+
+function showToast(msg){
+  const t=$id('save-toast');if(!t)return;
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// Preencher data hoje no campo contratante
+(function(){
+  const d=new Date();
+  const el=$id('c_data');
+  if(el&&!el.value){const f=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;el.value=f;}
+})();
+
+// ── INIT ─────────────────────────────────────────────
+let etapaAtual=1;
+
+function goStep(n){
+  if(n<1||n>3)return;
+  etapaAtual=n;
+  [1,2,3].forEach(i=>{
+    const s=$id('step-'+i);
+    if(s){s.style.display=i===n?'flex':'none';s.style.flexDirection='column';}
+  });
+  // Stepper sidebar
+  [1,2,3].forEach(i=>{
+    const nav=$id('snav-'+i),num=$id('snum-'+i);
+    if(!nav)return;
+    if(i<n){nav.className='step-nav-item done';num.innerHTML='<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>';}
+    else if(i===n){nav.className='step-nav-item current';num.textContent=i;}
+    else{nav.className='step-nav-item';num.textContent=i;}
+  });
+  // Mobile buttons
+  const mp=$id('mob-prev'),mn=$id('mob-next');
+  if(mp)mp.style.display=n>1?'inline-flex':'none';
+  if(mn){mn.textContent=n<3?'Próxima →':'Imprimir';mn.onclick=n<3?()=>goStep(n+1):()=>gerarRelatorio();}
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(n===3)calcCom();
+}
+
+function gerarRelatorio(){
+  const destNomes={'res_uni':'Residencial Unifamiliar','res_multi':'Residencial Multifamiliar',
+    'comercial':'Comercial Salas e Lojas','garagens':'Edifício de Garagens','galpao':'Galpão Industrial',
+    'casa_pop':'Casa Popular','conj_hab':'Conjunto Habitacional Popular'};
+  const tipoNomes={'alvenaria':'Alvenaria','madeira':'Madeira','mista':'Mista'};
+  const comp=$id('comp').value||'';
+  const [ano,mes]=comp.split('-');
+  const now=new Date();
+  $('print-data',`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} às ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`);
+  $('print-comp',comp&&mes?`${MESES_PT[parseInt(mes)-1]} / ${ano}`:'—');
+  $('print-uf',$id('uf')?.value||'—');
+  $('print-dest',destNomes[$id('dest')?.value]||$id('dest')?.value||'—');
+  $('print-tipo',tipoNomes[$id('tipo')?.value]||$id('tipo')?.value||'—');
+  $('print-ap',($id('ap')?.value||'0')+' m²');
+  $('print-ares',$id('area-res-display')?.textContent||'—');
+  $('print-vau',R(parseFloat($id('vau')?.value)||0));
+  // Mostrar todas as etapas no print
+  [1,2,3].forEach(i=>{const e=$id('step-'+i);if(e){e.style.display='flex';e.style.flexDirection='column';}});
+  window.print();
+  // Restaurar a etapa atual após impressão
+  setTimeout(()=>goStep(etapaAtual),800);
+}
+
+function switchResult(t){goStep(t==='sem'?2:3);}
+function onUF(){
+  $id('vau-alert').style.display='none';
+  autoVAU();
+  calcular();
+}
+function onDest(){
+  const dest=$id('dest').value,tipo=$id('tipo').value,ares=calcAreaResultante();
+  $id('vau-alert').style.display='none';
+  atualizarParams(dest,tipo,ares);
+  autoVAU();
+  calcular();
+}
+function onTipo(){
+  const dest=$id('dest').value,tipo=$id('tipo').value,ares=calcAreaResultante();
+  atualizarParams(dest,tipo,ares);
+  calcular();
+}
+function onAreas(){
+  const dest=$id('dest').value,tipo=$id('tipo').value,ares=calcAreaResultante();
+  const arEl=$id('area-res-display');if(arEl)arEl.textContent=ares>0?N(ares)+' m²':'—';
+  atualizarParams(dest,tipo,ares);
+  calcular();
+}
+function calcAreaResultante(){
+  return (parseFloat($id('ap').value)||0)+(parseFloat($id('ac').value)||0)*0.5+(parseFloat($id('ad').value)||0)*0.25;
+}
+function setConcreto(sim){
+  usaConc=sim;
+  $id('tog-sim').className=sim?'tog on-yes':'tog';
+  $id('tog-nao').className=sim?'tog':'tog on-no';
+  const m=$id('conc-msg');
+  m.className=sim?'alert info':'alert warn';
+  m.textContent=sim?'Percentual aplicado automaticamente conforme UF e destinação.':'Concreto usinado não utilizado — nenhuma dedução será aplicada.';
+  calcular();
+}
+
+function limpar(){
+  document.querySelectorAll('input').forEach(e=>e.value='');
+  document.querySelectorAll('select:not(#comp)').forEach(e=>e.selectedIndex=0);
+  $id('monthly-rows').innerHTML='';
+  $id('vau-alert').style.display='none';
+  $id('vau-badge').style.display='none';
+  const ra=$id('c_rmt_a'),rb=$id('c_rmt_b');
+  if(ra)delete ra.dataset.me;if(rb)delete rb.dataset.me;
+  rowC=0;ultimoINSS_a=0;ultimoINSS_b=0;ultimoRMT_a=0;ultimoRMT_b=0;
+  $id('area-res-display').textContent='—';
+  setConcreto(true);calcular();
+}
+
+// Marcar RMT A/B como editado manualmente
+$id('c_rmt_a')?.addEventListener('input',function(){this.dataset.me='1';calcCom();});
+$id('c_rmt_b')?.addEventListener('input',function(){this.dataset.me='1';calcCom();});
+
+// ─── INIT ─────────────────────────────────────────────
+gerarOpcoesMeses();
+setConcreto(true);
+atualizarBadgeComp();
+// Forçar estado inicial das etapas via inline style (sobrepõe CSS)
+[1,2,3].forEach(i=>{
+  const e=$id('step-'+i);
+  if(e){e.style.display=i===1?'flex':'none';e.style.flexDirection='column';}
+});
+const _mp=$id('mob-prev');if(_mp)_mp.style.display='none';
+// Listeners do login (evita problema de onclick antes do script carregar)
+$id('login-btn-main')?.addEventListener('click',doLogin);
+$id('link-reset-senha')?.addEventListener('click',doResetSenha);
+$id('login-email')?.addEventListener('keydown',e=>{if(e.key==='Enter')$id('login-pass')?.focus();});
+$id('login-pass')?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+$id('btn-logout')?.addEventListener('click',doLogout);
+$id('login-email')?.addEventListener('keydown',e=>{if(e.key==='Enter')$id('login-pass')?.focus();});
+$id('login-pass')?.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+$id('toggle-login-mode')?.addEventListener('click',toggleLoginMode);
+</script>
+</body>
+</html>
