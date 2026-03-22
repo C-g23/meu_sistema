@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema Tributário · ISSQN & INSS de Obra</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
+<script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=yxv7K2_aSwwQUIdoI0MdUkBDYsbmY_zqdC702YrNE_McdjhFBZdQi1s0DGOfN-X8raONeNnIyKkL_WyH0xU3mgzYEzGGeGqktGUQEw9YpFJxQ_2fjnMu_MSUB96kgvIiO37u51gAKCEf8RJdx4yszCnz68TnOHNu33IA5SnzccJJrStd2AJWoPPYm5XpnFft-G8ue4XLnkDhL70L0KyVl6BsxxsrL9f5N_QiQbgJNuNg0cCrSt7zciVy59YduR07BH9JS2R77n8B5C_loY0E_g" charset="UTF-8"></script><style>
 
 /* ════════════════════════════════════════════════════════
    SISTEMA TRIBUTÁRIO — Design System Unificado
@@ -2120,10 +2120,17 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
   <!-- Faixa 2: Remunerações mensais + INSS recolhido -->
   <div class="card">
     <div class="card-title">Remuneração mensal <span style="font-size:9px;color:var(--muted);font-weight:400;text-transform:none">— compartilhado A e B</span></div>
-    <div style="font-size:10px;color:var(--muted);margin-bottom:.75rem">* ICM = Índice de Correção Monetária. Valor Atualizado = Rem × (1+ICM%). CPP = 20% sobre a Remuneração original.</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:.75rem">* ICM = Índice de Correção Monetária. Valor Atualizado = Rem × (1+ICM%). CPP = 20% sobre a Remuneração original. Multa (%) incide sobre o CPP e aceita de 75% a 225%.</div>
+    <div style="display:flex;gap:.75rem;align-items:end;flex-wrap:wrap;margin-bottom:.875rem">
+      <div class="field" style="margin:0;min-width:180px">
+        <label>Quantidade de meses</label>
+        <input type="number" id="qtdMeses" min="1" max="120" value="1">
+      </div>
+      <button class="btn-secondary" type="button" onclick="replicarRemuneracao()">Preencher automaticamente</button>
+    </div>
     <div class="mrow-header">
       <span>Mês/Ano</span><span>Remuneração (R$)</span><span>ICM* (%)</span><span>Val. Atualizado</span>
-      <span>CPP 20%</span><span>Multa 20%</span><span>Juros MORA</span><span>MAED Mín.</span><span>Total</span><span></span>
+      <span>CPP 20%</span><span>Multa (%)</span><span>Juros MORA</span><span>MAED Mín.</span><span>Total</span><span></span>
     </div>
     <div id="monthly-rows"></div>
     <button class="btn-add" onclick="addRow()">+ Adicionar mês</button>
@@ -3045,22 +3052,91 @@ function setDiff(id,diff){
 // ─── CÁLCULO COM VINCULAÇÃO (dual A/B) ─────────────────
 function fmtCel(v){return isNaN(v)||v==null?'—':v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
-function addRow(){
+function addRow(prefill={}){
   rowC++;const id='mr'+rowC;
-  const inp=(ph,cls,onI)=>`<input type="number" placeholder="${ph}" min="0" step="0.01" class="${cls}" oninput="${onI}" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:6px 8px;color:var(--text);font-family:var(--sans);font-size:12px">`;
+  const numInp=(ph,cls,onI,extra='')=>`<input type="number" placeholder="${ph}" min="0" step="0.01" class="${cls}" oninput="${onI}" ${extra} style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:6px 8px;color:var(--text);font-family:var(--sans);font-size:12px">`;
   const d=document.createElement('div');d.className='mrow';d.id=id;
   d.innerHTML=
-    `<input type="month" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:6px 8px;color:var(--text);font-family:var(--sans);font-size:12px">`+
-    inp('0,00','rem-inp','calcRowAndTotal("'+id+'")') +
-    inp('0,000','icm-inp','calcRowAndTotal("'+id+'")') +
+    `<input type="month" class="mes-inp" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:6px 8px;color:var(--text);font-family:var(--sans);font-size:12px">`+
+    numInp('0,00','rem-inp',`calcRowAndTotal("${id}")`) +
+    numInp('0,000','icm-inp',`calcRowAndTotal("${id}")`) +
     `<div class="computed-cell" id="${id}_vatual">—</div>`+
     `<div class="cpp-cell" id="${id}_cpp">—</div>`+
-    inp('0,00','multa-inp','calcRowAndTotal("'+id+'")') +
-    inp('0,00','juros-inp','calcRowAndTotal("'+id+'")') +
-    inp('0,00','maed-inp','calcRowAndTotal("'+id+'")') +
+    numInp('75','multa-inp',`validarMulta("${id}")`,'min="75" max="225" value="75"') +
+    numInp('0,00','juros-inp',`calcRowAndTotal("${id}")`) +
+    numInp('0,00','maed-inp',`calcRowAndTotal("${id}")`) +
     `<div class="total-cell" id="${id}_total">—</div>`+
     `<button class="btn-del" onclick="document.getElementById('${id}').remove();calcCom()">×</button>`;
   $id('monthly-rows').appendChild(d);
+
+  const row=$id(id);
+  if(prefill.mes) row.querySelector('.mes-inp').value = prefill.mes;
+  if(prefill.rem!=null) row.querySelector('.rem-inp').value = prefill.rem;
+  if(prefill.icm!=null) row.querySelector('.icm-inp').value = prefill.icm;
+  row.querySelector('.multa-inp').value = (prefill.multa!=null && prefill.multa!=='') ? prefill.multa : 75;
+  if(prefill.juros!=null) row.querySelector('.juros-inp').value = prefill.juros;
+  if(prefill.maed!=null) row.querySelector('.maed-inp').value = prefill.maed;
+
+  calcRowAndTotal(id);
+}
+
+function validarMulta(id){
+  const row=$id(id); if(!row) return;
+  const inp=row.querySelector('.multa-inp'); if(!inp) return;
+  let valor=parseFloat(inp.value);
+  if(isNaN(valor)) valor=75;
+  if(valor<75 || valor>225){
+    alert('Valor fora dos parâmetros. Utilize entre 75% e 225% ou mantenha o padrão de 75%.');
+    valor=75;
+  }
+  inp.value=valor;
+  calcRowAndTotal(id);
+}
+
+function replicarRemuneracao(){
+  const qtd = parseInt($id('qtdMeses')?.value)||1;
+  const rows=[...document.querySelectorAll('#monthly-rows .mrow')];
+  if(!rows.length){
+    addRow();
+  }
+  const first=document.querySelector('#monthly-rows .mrow');
+  if(!first) return;
+
+  const mesInicial=first.querySelector('.mes-inp')?.value || '';
+  const remuneracao=first.querySelector('.rem-inp')?.value || '';
+  const icm=first.querySelector('.icm-inp')?.value || '';
+  const multa=first.querySelector('.multa-inp')?.value || '75';
+  const juros=first.querySelector('.juros-inp')?.value || '0';
+  const maed=first.querySelector('.maed-inp')?.value || '0';
+
+  if(!mesInicial || !remuneracao){
+    alert('Preencha o mês/ano e a remuneração na primeira linha.');
+    return;
+  }
+
+  const [anoBase, mesBase] = mesInicial.split('-').map(Number);
+  if(!anoBase || !mesBase){
+    alert('Competência inicial inválida.');
+    return;
+  }
+
+  while(document.querySelectorAll('#monthly-rows .mrow').length < qtd){
+    addRow();
+  }
+
+  const allRows=[...document.querySelectorAll('#monthly-rows .mrow')];
+  for(let i=0;i<qtd;i++){
+    const row=allRows[i];
+    const dt=new Date(anoBase, mesBase-1+i, 1);
+    const competencia=`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+    row.querySelector('.mes-inp').value = competencia;
+    row.querySelector('.rem-inp').value = remuneracao;
+    row.querySelector('.icm-inp').value = icm;
+    row.querySelector('.multa-inp').value = multa;
+    row.querySelector('.juros-inp').value = juros;
+    row.querySelector('.maed-inp').value = maed;
+    calcRowAndTotal(row.id);
+  }
   calcCom();
 }
 
@@ -3070,7 +3146,11 @@ function calcRowAndTotal(id){
   const icm=parseFloat(row.querySelector('.icm-inp').value)||0;
   const vatual=rem*(1+icm/100);
   const cpp=rem*0.20;
-  const multa=parseFloat(row.querySelector('.multa-inp').value)||0;
+  let multaPct=parseFloat(row.querySelector('.multa-inp').value);
+  if(isNaN(multaPct)) multaPct=75;
+  if(multaPct<75 || multaPct>225) multaPct=75;
+  row.querySelector('.multa-inp').value=multaPct;
+  const multa=cpp*(multaPct/100);
   const juros=parseFloat(row.querySelector('.juros-inp').value)||0;
   const maed=parseFloat(row.querySelector('.maed-inp').value)||0;
   const total=cpp+multa+juros+maed;
@@ -3090,7 +3170,10 @@ function calcCom(){
   const rows=document.querySelectorAll('#monthly-rows .mrow');
   rows.forEach(row=>{
     const rem=parseFloat(row.querySelector('.rem-inp')?.value)||0;
-    const multa=parseFloat(row.querySelector('.multa-inp')?.value)||0;
+    let multaPct=parseFloat(row.querySelector('.multa-inp')?.value);
+    if(isNaN(multaPct)) multaPct=75;
+    if(multaPct<75 || multaPct>225) multaPct=75;
+    const multa=(rem*0.20)*(multaPct/100);
     const juros=parseFloat(row.querySelector('.juros-inp')?.value)||0;
     const maed=parseFloat(row.querySelector('.maed-inp')?.value)||0;
     const cpp=rem*0.20;
@@ -3858,16 +3941,12 @@ async function carregarRelatorio(id){
     rowC=0;
     if(e3.remuneracoes?.length){
       e3.remuneracoes.forEach(m=>{
-        addRow();
-        const id='mr'+rowC;const row=$id(id);if(!row)return;
-        const mesEl=row.querySelector('input[type=month]');if(mesEl)mesEl.value=m.mes||'';
-        const rem=row.querySelector('.rem-inp');if(rem)rem.value=m.rem||'0';
-        const icm=row.querySelector('.icm-inp');if(icm)icm.value=m.icm||'0';
-        const multa=row.querySelector('.multa-inp');if(multa)multa.value=m.multa||'0';
-        const juros=row.querySelector('.juros-inp');if(juros)juros.value=m.juros||'0';
-        const maed=row.querySelector('.maed-inp');if(maed)maed.value=m.maed||'0';
-        calcRowAndTotal(id);
+        let multaRest = parseFloat(m.multa);
+        if(isNaN(multaRest) || multaRest < 75 || multaRest > 225) multaRest = 75;
+        addRow({mes:m.mes||'', rem:m.rem||'0', icm:m.icm||'0', multa:multaRest, juros:m.juros||'0', maed:m.maed||'0'});
       });
+    } else {
+      addRow({multa:75});
     }
     // INSS já recolhido
     if(e3.rec)s('c_rec',e3.rec);
@@ -3991,6 +4070,7 @@ function limpar(){
   const ra=$id('c_rmt_a'),rb=$id('c_rmt_b');
   if(ra)delete ra.dataset.me;if(rb)delete rb.dataset.me;
   rowC=0;ultimoINSS_a=0;ultimoINSS_b=0;ultimoRMT_a=0;ultimoRMT_b=0;
+  addRow({multa:75});
   $id('area-res-display').textContent='—';
   setConcreto(true);calcular();
 }
@@ -4019,6 +4099,7 @@ const _mp=$id('mob-prev');if(_mp)_mp.style.display='none';
 function initInss(){
   if(_inssOk) return;
   _inssOk=true;
+  if(!$id('monthly-rows')?.children.length) addRow({multa:75});
   if(typeof calcular==='function') try{calcular();}catch{}
 }
 
