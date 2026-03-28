@@ -845,10 +845,10 @@ body::before{
 /* ═══ CSS DO INSS DE OBRA ═══ */
 
 :root{
-  --bg:#0f1117;--surface:#181c27;--card:#1e2330;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);
-  --text:#e8eaf0;--muted:#7c8296;--accent:#3b82f6;--accent2:#60a5fa;
-  --green:#10b981;--green2:#34d399;--amber:#f59e0b;--red:#ef4444;--red2:#fca5a5;
-  --serif:'DM Serif Display',serif;--sans:'DM Sans',sans-serif;--r:10px;--r2:6px;
+  --bg:#eef3f7;--surface:#f8fbfd;--card:#ffffff;--border:#d9e3eb;--border2:#cfd9e3;
+  --text:#1e2c38;--muted:#6d7d8d;--accent:#2f80ed;--accent2:#3c8cf0;
+  --green:#18a874;--green2:#139766;--amber:#c9964e;--red:#d96b6b;--red2:#ef9a9a;
+  --serif:'DM Serif Display',serif;--sans:'DM Sans',sans-serif;--r:16px;--r2:12px;
 }
 /* ── Login screen ── */
 .login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:1.5rem}
@@ -1392,6 +1392,438 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 </style>
 
 <!-- Firebase setup centralizado abaixo -->
+
+
+<style id="sf-theme-v3-balance">
+/* Ajuste fino completo do sistema para padrão contábil claro e fluido */
+
+/* base mais clara */
+body::before{display:none !important}
+#mod-inss,#mod-issqn,.uni-module,.uni-content,.main,.wrapper{
+  background:transparent !important;
+}
+.sf-top-brand{
+  margin:10px 0 16px !important;
+  background:linear-gradient(135deg,#163149,#21415f) !important;
+  border:1px solid rgba(198,146,74,.22) !important;
+}
+.sf-top-brand .name{color:#fff !important}
+.sf-top-brand .role{color:#dfc18a !important}
+
+/* padrões de seção */
+.mod-issqn .sec-title,
+#mod-inss .section-title,
+#mod-inss .card-title,
+.mod-issqn .card-title{
+  color:#163149 !important;
+  font-family:var(--serif) !important;
+  font-size:1.02rem !important;
+  font-weight:400 !important;
+  border-bottom:1px solid #e5ecf2 !important;
+  padding-bottom:.8rem !important;
+  margin-bottom:1.15rem !important;
+}
+
+/* cards e superfícies */
+.mod-issqn .card,
+.mod-issqn .h-card,
+.mod-issqn .cmp-card,
+.mod-issqn .exp-bar,
+.mod-issqn .res-grid,
+.mod-issqn .pont-toggle,
+.mod-issqn .ded-info,
+#mod-inss .card,
+#mod-inss .exp-bar,
+#mod-inss .eco-card,
+#mod-inss .step-card,
+#mod-inss .result-card,
+#mod-inss .ab-card-a,
+#mod-inss .ab-card-b,
+.cli-card,
+.cp-body .cli-card{
+  background:#ffffff !important;
+  color:#1d2a36 !important;
+  border:1px solid #dbe4ec !important;
+  box-shadow:0 8px 22px rgba(15,36,56,.06) !important;
+  border-radius:16px !important;
+}
+
+/* labels mais técnicas */
+.mod-issqn label,.mod-issqn .field>label,
+#mod-inss label,#mod-inss .field>label,#mod-inss .card-title,
+.cp-field label{
+  color:#607283 !important;
+  letter-spacing:.08em !important;
+  text-transform:uppercase !important;
+  font-size:10.5px !important;
+  font-weight:700 !important;
+}
+
+/* campos */
+.mod-issqn .inp,
+.mod-issqn .sel-d,
+#mod-inss input,#mod-inss select,#mod-inss textarea,
+.cp-field input,.cp-field select,.cp-field textarea{
+  background:#f7fafc !important;
+  color:#1d2a36 !important;
+  border:1px solid #ced9e3 !important;
+  border-radius:12px !important;
+}
+.mod-issqn .inp::placeholder,
+#mod-inss input::placeholder,#mod-inss textarea::placeholder,
+.cp-field input::placeholder,.cp-field textarea::placeholder{
+  color:#8a98a8 !important;
+}
+.mod-issqn .sel-dd{
+  background:#ffffff !important;
+  border:1px solid #d6e0e8 !important;
+  box-shadow:0 16px 32px rgba(15,36,56,.10) !important;
+}
+.mod-issqn .sel-opt{
+  color:#314252 !important;
+}
+.mod-issqn .sel-opt:hover{
+  background:#f6f9fc !important;
+  color:#163149 !important;
+}
+.mod-issqn .sel-opt.active{
+  background:rgba(198,146,74,.12) !important;
+  color:#8f6725 !important;
+}
+
+/* barra de exportação e ações */
+.mod-issqn .exp-bar,
+#mod-inss .exp-bar{
+  display:flex !important;
+  align-items:center !important;
+  gap:.55rem !important;
+  flex-wrap:wrap !important;
+  padding:.85rem 1rem !important;
+}
+.mod-issqn .exp-lbl,
+#mod-inss .exp-lbl{
+  color:#6d7c8b !important;
+  font-size:10.5px !important;
+  letter-spacing:.08em !important;
+  text-transform:uppercase !important;
+  font-weight:700 !important;
+}
+
+/* botões */
+.mod-issqn .btn-p,
+#mod-inss .btn-step.next,
+#mod-inss .btn-primary,
+button[onclick*="salvarRelatorio"],
+button[onclick*="salvar()"]{
+  background:linear-gradient(135deg,#c6924a,#e3bf82) !important;
+  color:#173047 !important;
+  border:1px solid rgba(198,146,74,.45) !important;
+}
+.mod-issqn .btn-s,
+.mod-issqn .btn-exp,
+#mod-inss .btn-step.prev,
+#mod-inss .btn,
+#mod-inss .exp-bar button:not(.primary):not(.btn-primary){
+  background:#ffffff !important;
+  color:#163149 !important;
+  border:1px solid #cfdae4 !important;
+}
+.mod-issqn .btn-danger,
+#mod-inss .danger{
+  background:#fff6f6 !important;
+  color:#bf4f4f !important;
+  border:1px solid #efcaca !important;
+}
+
+/* resultados ISSQN */
+.mod-issqn .res-grid{
+  overflow:hidden !important;
+}
+.mod-issqn .ri{
+  background:#ffffff !important;
+  border-color:#e6edf3 !important;
+}
+.mod-issqn .rl{
+  color:#6d7c8b !important;
+  font-size:11px !important;
+}
+.mod-issqn .rv{
+  color:#1d2a36 !important;
+  font-weight:600 !important;
+}
+.mod-issqn .ri.hi{
+  background:linear-gradient(135deg,#c6924a,#e8c98e) !important;
+}
+.mod-issqn .ri.hi .rl,
+.mod-issqn .ri.hi .rv{
+  color:#163149 !important;
+}
+.mod-issqn .ri.issqn-ded{
+  background:#f2fbf7 !important;
+}
+.mod-issqn .ri.issqn-ded .rv{
+  color:#178a5b !important;
+}
+
+/* toques de coerência no INSS */
+#mod-inss .alert,
+#mod-inss .msg,
+.mod-issqn .msg{
+  background:#fff9ef !important;
+  color:#996b20 !important;
+  border:1px solid #efd9ab !important;
+}
+#mod-inss .alert.info{
+  background:#f4f8fc !important;
+  color:#35536e !important;
+  border:1px solid #d6e3ef !important;
+}
+#mod-inss .alert.warn{
+  background:#fff9ef !important;
+  color:#996b20 !important;
+  border:1px solid #efd9ab !important;
+}
+#mod-inss .eco-card.ec-eco{
+  background:#f2fbf7 !important;
+  border-color:#cfeedd !important;
+}
+#mod-inss .eco-card.ec-red{
+  background:#fff6f6 !important;
+  border-color:#f0d2d2 !important;
+}
+
+/* histórico e clientes */
+.cli-card:hover,
+.mod-issqn .h-card:hover{
+  border-color:#d0ae72 !important;
+  background:#fffdf9 !important;
+}
+.cli-card .cli-actions,
+.mod-issqn .cmp-area{
+  border-color:#ebf0f5 !important;
+}
+
+/* mobile mais fluido */
+@media (max-width:768px){
+  #mod-inss .exp-bar,#mod-issqn .exp-bar{
+    position:sticky;
+    bottom:8px;
+    z-index:20;
+    background:rgba(255,255,255,.95) !important;
+    backdrop-filter:blur(6px);
+  }
+}
+</style>
+
+
+<style id="sf-visual-hard-fix">
+html,body{
+  background:linear-gradient(180deg,#f5f8fb 0%, #ebf1f5 100%) !important;
+  color:var(--text) !important;
+}
+body{font-family:Inter,Arial,sans-serif !important}
+.card,.panel,.box,.calc-card,.stage-card,.cli-card,.hist-card,.cp-card,.uni-card,
+.section,.widget,.result-card,.summary-card,.step-card,.module-card{
+  background:var(--card) !important;
+  border:1px solid var(--border) !important;
+  border-radius:16px !important;
+  box-shadow:0 4px 12px rgba(18,39,59,.05) !important;
+}
+.card-title,.section-title,.module-title{
+  color:#183049 !important;
+}
+.field label,label,.label,.helper,.helper-text,.muted,.subtle,.meta,.caption{
+  color:var(--muted) !important;
+}
+.field input,.field select,input,select,textarea{
+  background:var(--surface) !important;
+  border:1px solid var(--border2) !important;
+  color:var(--text) !important;
+  border-radius:12px !important;
+  min-height:44px !important;
+}
+.field input::placeholder,.field select::placeholder,input::placeholder,textarea::placeholder{
+  color:#8a9aab !important;
+}
+.field input:focus,.field select:focus,input:focus,select:focus,textarea:focus{
+  outline:none !important;
+  border-color:#8eb5e2 !important;
+  box-shadow:0 0 0 3px rgba(47,128,237,.12) !important;
+}
+
+/* operational dark bars made harmonic */
+.step-footer,.toggle-row,.comp-row{
+  background:linear-gradient(90deg,#12273b,#173149) !important;
+  color:#eef4fa !important;
+  border:1px solid rgba(255,255,255,.06) !important;
+  border-radius:16px !important;
+  box-shadow:0 8px 20px rgba(18,39,59,.08) !important;
+}
+.step-footer span,.step-footer div,.step-footer strong,.step-footer button,
+.toggle-row span,.toggle-row div,.toggle-row strong,.toggle-row button,
+.comp-row span,.comp-row div,.comp-row strong,.comp-row a{
+  color:#eef4fa !important;
+}
+.btn-step.prev{
+  background:#ffffff !important;
+  color:#183049 !important;
+  border:1px solid #d4dee7 !important;
+}
+.btn-step.next,.cp-save,.primary,.btn-primary{
+  background:linear-gradient(135deg,#c9964e,#e7c98f) !important;
+  color:#153049 !important;
+  border:1px solid rgba(201,150,78,.42) !important;
+}
+.cli-btn,.secondary,.ghost{
+  background:#fff !important;
+  color:#183049 !important;
+  border:1px solid #d4dee7 !important;
+}
+.cbadge.ok{
+  background:#ecfbf5 !important;
+  border:1px solid #bde9d6 !important;
+  color:#137a56 !important;
+}
+.cbadge.manual{
+  background:#fff7ec !important;
+  border:1px solid #f1dbb3 !important;
+  color:#a86a16 !important;
+}
+.toggle-row{
+  padding:12px 14px !important;
+}
+.tog{
+  background:transparent !important;
+  border:1px solid rgba(255,255,255,.16) !important;
+  color:#d8e1ea !important;
+  border-radius:999px !important;
+}
+.tog.on-yes{
+  background:#ecfbf5 !important;
+  border-color:#a9e4ce !important;
+  color:#137a56 !important;
+}
+.tog.on-no{
+  background:#fff7ec !important;
+  border-color:#ead29d !important;
+  color:#a86a16 !important;
+}
+
+/* KPI cards */
+.ab-badge.ab-a{
+  background:#edf5ff !important;
+  border:1px solid #c8dcfb !important;
+  color:#2f80ed !important;
+}
+.ab-badge.ab-b{
+  background:#fff7ec !important;
+  border:1px solid #edd8b1 !important;
+  color:#b47413 !important;
+}
+.area-res-row{
+  background:#edf5ff !important;
+  border:1px solid #c8dcfb !important;
+}
+.area-res-label,.area-res-val{
+  color:#2f80ed !important;
+}
+.comp-grid .comp-col-head.a,.ab-dot.a,#rmt-para-proxima-a{
+  color:#2f80ed !important;
+  background:none !important;
+}
+.comp-grid .comp-col-head.b,.ab-dot.b,#rmt-para-proxima-b{
+  color:#c9964e !important;
+  background:none !important;
+}
+.comp-grid .comp-row-label,.comp-grid .comp-val{
+  border-bottom:1px solid rgba(255,255,255,.08) !important;
+}
+.comp-grid .comp-val.diff{
+  color:#c7d2dd !important;
+}
+
+/* history / pale blocks */
+.inline-inss-history,.inss-history-inline,.history-box,.sim-list-box{
+  background:#eef3f7 !important;
+  border:1px solid #d2dce5 !important;
+  border-radius:18px !important;
+}
+.inline-inss-history *,.inss-history-inline *,.history-box *,.sim-list-box *{
+  color:#5d6f81 !important;
+}
+.inline-inss-history .cli-btn,.inss-history-inline .cli-btn,.history-box .cli-btn{
+  background:#f8fbfd !important;
+  border:1px solid #cfdae4 !important;
+  color:#2f80ed !important;
+}
+
+/* tables and codes */
+table{background:transparent !important}
+th{
+  background:#f7fafc !important;
+  color:#173049 !important;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  font-size:11px !important;
+}
+td,th{border-bottom:1px solid #e3ebf2 !important}
+td:last-child{text-align:right !important;color:#173049 !important;font-weight:700 !important}
+
+/* sidebar */
+#uni-sidebar,.uni-sidebar,.sidebar{
+  background:linear-gradient(180deg,#12273b,#173149) !important;
+  color:#eef4fa !important;
+}
+#uni-sidebar .nav-item,.uni-sidebar .nav-item,.sidebar .nav-item,.panel-tab{
+  color:#d8e1ea !important;
+  border-radius:12px !important;
+}
+#uni-sidebar .nav-item.active,.uni-sidebar .nav-item.active,.sidebar .nav-item.active,.panel-tab.on{
+  background:rgba(201,150,78,.18) !important;
+  color:#fff !important;
+  border-left:3px solid #c9964e !important;
+}
+
+/* brand band */
+.sf-top-brand{
+  margin:14px 0 18px;
+  padding:16px 18px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#173149,#21415f);
+  color:#fff;
+  border:1px solid rgba(201,150,78,.18);
+  box-shadow:0 8px 24px rgba(18,39,59,.08);
+}
+.sf-top-brand .name{
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:30px;
+  font-style:italic;
+  line-height:1;
+}
+.sf-top-brand .role{
+  margin-top:6px;
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  font-size:11px;
+  color:#e2c792;
+}
+</style>
+<script id="sf-visual-hard-fix-script">
+document.addEventListener('DOMContentLoaded', function(){
+  try{
+    var main = document.querySelector('#mod-issqn') || document.querySelector('#mod-inss') || document.querySelector('.main-content') || document.body;
+    if(main && !document.getElementById('sf-top-brand')){
+      var band = document.createElement('div');
+      band.id = 'sf-top-brand';
+      band.className = 'sf-top-brand';
+      band.innerHTML = '<div class="name">Sarah Franco</div><div class="role">Contadora</div>';
+      main.insertBefore(band, main.firstElementChild);
+    }
+    var inlineHistories = document.querySelectorAll('[id*="inline-inss-history"], .inline-inss-history, .inss-history-inline');
+    inlineHistories.forEach(function(el){ el.classList.add('inline-inss-history'); });
+  }catch(e){}
+});
+</script>
 
 </head>
 <body>
@@ -3794,6 +4226,8 @@ function abrirJanelaRelatorio(titulo, html){
   return w;
 }
 function montarHtmlRelatorioISSQN(x){
+  const marcaNome = 'Sarah Franco';
+  const marcaTitulo = 'Contadora';
   const linhasContratante = [
     ['Contratante', valorLimpo(x.contratante)],
     ['CPF / CNPJ', valorLimpo(x.documento)],
@@ -3816,50 +4250,177 @@ function montarHtmlRelatorioISSQN(x){
   return `<!DOCTYPE html><html lang="pt-BR"><head>
   <meta charset="UTF-8"><title>Relatório ISSQN - ${escHtml(x.contratante||'Simulação')}</title>
   <style>
-    *{box-sizing:border-box} body{font-family:Arial,sans-serif;color:#111;padding:20mm;font-size:12px}
-    .hdr{display:flex;justify-content:space-between;gap:16px;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:16px}
-    .sub{font-size:11px;color:#666;margin-top:4px}.meta{font-size:11px;line-height:1.7;text-align:right;color:#444}
-    h1{font-size:20px;margin:0} h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:16px 0 8px;color:#8a6a23}
-    table{width:100%;border-collapse:collapse} td{padding:7px 8px;border-bottom:1px solid #e5e7eb;vertical-align:top}
-    td:first-child{width:48%;color:#555;font-weight:600} td:last-child{text-align:right}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.card{border:1px solid #d9d9d9;border-radius:10px;padding:10px 12px;background:#fcfcfb}
-    .highlight{margin-top:14px;border:1.5px solid #c49d46;border-radius:12px;padding:14px;text-align:center;background:#faf7ef}
-    .big{font-size:28px;font-weight:700;color:#8a6a23;margin:6px 0}.foot{margin-top:18px;padding-top:10px;border-top:1px solid #ddd;font-size:10px;color:#666;text-align:center}
-    @page{size:A4;margin:12mm}
+    :root{--navy:#0f2438;--navy-soft:#18344d;--gold:#c6924a;--gold-soft:#e6c287;--paper:#fffdf9;--line:#e7dcc9;--text:#14202b;--muted:#697786}
+    *{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;color:var(--text);padding:12mm;background:var(--paper);font-size:12px}
+    .brand-band{background:linear-gradient(135deg,var(--navy),#102d47);border-radius:18px;padding:18px 20px 14px;color:#fff;position:relative;overflow:hidden;margin-bottom:16px}
+    .brand-band:before{content:'';position:absolute;right:-30px;top:-46px;width:220px;height:120px;background:var(--gold);border-bottom-left-radius:140px;opacity:.95}
+    .brand-grid{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;position:relative;z-index:1}
+    .brand-name{font-family:Georgia,serif;font-size:32px;font-style:italic;line-height:1;margin:0 0 4px}
+    .brand-role{font-size:11px;letter-spacing:.28em;text-transform:uppercase;opacity:.9}
+    .doc-title{font-size:18px;font-weight:700;margin:0 0 6px}
+    .doc-sub{font-size:11px;color:#d3dde7}
+    .meta{font-size:11px;line-height:1.7;text-align:right;color:#e8eef3}
+    .meta strong{color:#fff}
+    h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 8px;color:#7f5b1e}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .card{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff}
+    table{width:100%;border-collapse:collapse}
+    td{padding:7px 8px;border-bottom:1px solid #efe6d7;vertical-align:top}
+    td:first-child{width:48%;color:#5c6773;font-weight:700}
+    td:last-child{text-align:right}
+    .summary{margin-top:14px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff}
+    .highlight{margin-top:14px;border:none;border-radius:16px;padding:18px;text-align:center;background:linear-gradient(135deg,#c6924a,#e6c287);color:#14202b}
+    .highlight .label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;opacity:.8}
+    .big{font-size:30px;font-weight:800;color:#14202b;margin:8px 0}
+    .foot{margin-top:16px;padding-top:10px;border-top:1px solid var(--line);font-size:10px;color:#667281;text-align:center}
+    @page{size:A4;margin:10mm}
   </style></head><body>
-    <div class="hdr">
-      <div><h1>Relatório ISSQN</h1><div class="sub">Sistema Tributário · Simulação de custo de obra e ISSQN</div></div>
-      <div class="meta"><div>Emitido em: <strong>${escHtml(x.data||today())}</strong></div><div>Usuário: <strong>${escHtml(x._user||'—')}</strong></div></div>
+    <div class="brand-band">
+      <div class="brand-grid">
+        <div>
+          <div class="brand-name">${escHtml(marcaNome)}</div>
+          <div class="brand-role">${escHtml(marcaTitulo)}</div>
+          <div style="height:12px"></div>
+          <div class="doc-title">Relatório ISSQN</div>
+          <div class="doc-sub">Simulação de custo de obra e apuração estimada do ISSQN</div>
+        </div>
+        <div class="meta">
+          <div>Emitido em: <strong>${escHtml(x.data||today())}</strong></div>
+          <div>Usuário: <strong>${escHtml(x._user||'—')}</strong></div>
+        </div>
+      </div>
     </div>
     <div class="grid">
       <div class="card"><h2>Dados do contratante</h2><table>${linhasContratante}</table></div>
       <div class="card"><h2>Parâmetros do cálculo</h2><table>${linhasCalc}</table></div>
     </div>
-    <div class="card" style="margin-top:14px"><h2>Resultado consolidado</h2><table>
+    <div class="summary"><h2>Resultado consolidado</h2><table>
       <tr><td>Custo arbitrado total</td><td>${escHtml(valorLimpo(x.custoArbitrado))}</td></tr>
       <tr><td>ISSQN estimado</td><td><strong>${escHtml(valorLimpo(x.issqn))}</strong></td></tr>
     </table></div>
-    <div class="highlight"><div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.08em">Valor estimado do ISSQN</div><div class="big">${escHtml(valorLimpo(x.issqn))}</div><div style="font-size:11px;color:#666">Alíquota aplicada: ${escHtml(aliquotaLabel(x.aliquota))}</div></div>
-    <div class="foot">Documento gerado automaticamente pelo sistema. Os valores apresentados refletem os dados preenchidos na simulação.</div>
+    <div class="highlight">
+      <div class="label">Valor estimado do ISSQN</div>
+      <div class="big">${escHtml(valorLimpo(x.issqn))}</div>
+      <div style="font-size:11px;opacity:.85">Alíquota aplicada: ${escHtml(aliquotaLabel(x.aliquota))}</div>
+    </div>
+    <div class="foot">Documento gerado automaticamente pelo sistema de Sarah Franco Contadora. Os valores apresentados refletem os dados preenchidos na simulação.</div>
   </body></html>`;
 }
 function montarHtmlRelatorioINSS(d){
+  const marcaNome = 'Sarah Franco';
+  const marcaTitulo = 'Contadora';
   const c=d.contratante||{}, o=d.obra||{}, p=d.params||{}, e2=d.etapa2||{}, e3=d.etapa3||{};
   const rems=(e3.remuneracoes||[]).map(r=>`<tr><td>${escHtml(valorLimpo(r.mes))}</td><td>${escHtml(valorLimpo(r.rem))}</td><td>${escHtml(valorLimpo(r.icm))}</td><td>${escHtml(valorLimpo(r.multa))}</td><td>${escHtml(valorLimpo(r.juros))}</td><td>${escHtml(valorLimpo(r.maed))}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:#666">Sem remunerações lançadas.</td></tr>';
   const box = (title, rows)=>`<div class="card"><h2>${title}</h2><table>${rows.map(([k,v])=>`<tr><td>${escHtml(k)}</td><td>${escHtml(valorLimpo(v))}</td></tr>`).join('')}</table></div>`;
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório INSS de Obra - ${escHtml(c.nome||d.titulo||'Simulação')}</title>
   <style>
-    *{box-sizing:border-box} body{font-family:Arial,sans-serif;color:#111;padding:14mm;font-size:11.5px}
-    .hdr{display:flex;justify-content:space-between;gap:16px;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:14px}
-    h1{font-size:20px;margin:0}.sub{font-size:11px;color:#666;margin-top:4px}.meta{font-size:11px;line-height:1.7;text-align:right;color:#444}
-    h2{font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 8px;color:#8a6a23}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.card{border:1px solid #ddd;border-radius:10px;padding:10px 12px;background:#fcfcfb}
-    table{width:100%;border-collapse:collapse} td,th{padding:6px 7px;border-bottom:1px solid #ececec} td:first-child,th:first-child{color:#555;font-weight:600} td:last-child{text-align:right}
-    .full{margin-top:12px}.result{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}.pill{border:1.5px solid #c49d46;border-radius:12px;padding:12px;background:#faf7ef;text-align:center}
-    .big{font-size:24px;font-weight:700;color:#8a6a23;margin-top:4px}.foot{margin-top:16px;padding-top:8px;border-top:1px solid #ddd;font-size:10px;color:#666;text-align:center}
+    :root{--navy:#0f2438;--navy-soft:#18344d;--gold:#c6924a;--gold-soft:#e6c287;--paper:#fffdf9;--line:#e7dcc9;--text:#14202b;--muted:#697786}
+    *{box-sizing:border-box}
+    body{font-family:Arial,sans-serif;color:var(--text);padding:10mm;background:var(--paper);font-size:11.5px}
+    .brand-band{background:linear-gradient(135deg,var(--navy),#102d47);border-radius:18px;padding:18px 20px 14px;color:#fff;position:relative;overflow:hidden;margin-bottom:14px}
+    .brand-band:before{content:'';position:absolute;right:-35px;top:-52px;width:230px;height:126px;background:var(--gold);border-bottom-left-radius:160px;opacity:.95}
+    .brand-grid{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;position:relative;z-index:1}
+    .brand-name{font-family:Georgia,serif;font-size:32px;font-style:italic;line-height:1;margin:0 0 4px}
+    .brand-role{font-size:11px;letter-spacing:.28em;text-transform:uppercase;opacity:.9}
+    .doc-title{font-size:18px;font-weight:700;margin:0 0 6px}
+    .doc-sub{font-size:11px;color:#d3dde7}
+    .meta{font-size:11px;line-height:1.7;text-align:right;color:#e8eef3}
+    .meta strong{color:#fff}
+    h2{font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 8px;color:#7f5b1e}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .card{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:#fff}
+    table{width:100%;border-collapse:collapse}
+    td,th{padding:6px 7px;border-bottom:1px solid #efe6d7}
+    td:first-child,th:first-child{color:#5c6773;font-weight:700}
+    td:last-child,th:last-child{text-align:right}
+    .full{margin-top:12px}
+    .result{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin-top:12px}
+    .pill{border:none;border-radius:16px;padding:16px;background:linear-gradient(135deg,#c6924a,#e6c287);text-align:center;color:#14202b}
+    .pill .label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;opacity:.85}
+    .big{font-size:28px;font-weight:800;color:#14202b;margin-top:6px}
+    .foot{margin-top:16px;padding-top:8px;border-top:1px solid var(--line);font-size:10px;color:#667281;text-align:center}
     @page{size:A4;margin:10mm}
-  </style></head><body>
-    <div class="hdr"><div><h1>Relatório INSS de Obra</h1><div class="sub">Aferição indireta de obras · resumo técnico da simulação</div></div><div class="meta"><div>Emitido em: <strong>${escHtml(d.dataSimulacao||today())}</strong></div><div>Competência: <strong>${escHtml(o.compLabel||o.comp||'—')}</strong></div></div></div>
+  </style>
+<style id="sf-fluid-accounting-theme">
+:root{
+  --bg:#f4f7fb !important;
+  --surface:#ffffff !important;
+  --surface-2:#f8fafc !important;
+  --surface-3:#eef3f8 !important;
+  --card:#ffffff !important;
+  --panel:#ffffff !important;
+  --text:#183044 !important;
+  --muted:#6d7f90 !important;
+  --accent:#1f4b6e !important;
+  --accent2:#2d5f86 !important;
+  --gold:#c9974e !important;
+  --gold-soft:#e6c997 !important;
+  --ok:#2e9f7a !important;
+  --danger:#c75b5b !important;
+  --border:rgba(24,48,68,.09) !important;
+  --shadow:0 10px 28px rgba(17,35,52,.08) !important;
+}
+html,body{background:linear-gradient(180deg,#f4f7fb 0%,#edf3f8 100%) !important;color:var(--text) !important}
+body{letter-spacing:.005em}
+.uni-sidebar,#uni-sidebar,.uni-mob-hdr{background:linear-gradient(180deg,#173754 0%, #1b4366 100%) !important;border-right:1px solid rgba(255,255,255,.08) !important;box-shadow:none !important}
+.uni-logo.sf-identity-logo{padding:16px 14px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.06) 0%, rgba(255,255,255,.03) 100%);border:1px solid rgba(230,201,151,.18);box-shadow:0 8px 22px rgba(0,0,0,.14)}
+.sf-brand-name{font-family:Georgia,"Times New Roman",serif;font-size:1.9rem;font-style:italic;color:#fff;line-height:1}
+.sf-brand-role{margin-top:6px;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#e8d2aa}
+.sf-brand-chip{display:inline-block;margin-top:10px;padding:4px 10px;border-radius:999px;background:rgba(230,201,151,.12);border:1px solid rgba(230,201,151,.24);color:#f3dfbb;font-size:10px;text-transform:uppercase;letter-spacing:.1em}
+.uni-sidebar .nav-item,.uni-sidebar button,.uni-sidebar a,.panel-tab,.side-link{color:rgba(255,255,255,.78) !important}
+.uni-sidebar .nav-item.active,.panel-tab.on,.side-link.active{background:rgba(230,201,151,.14) !important;border-left:3px solid var(--gold) !important;color:#fff !important}
+.uni-content,.uni-module,.app-shell,.module-wrap{background:transparent !important}
+.card,.panel,.box,.calc-card,.stage-card,.cli-card,.hist-card,.cp-card,.uni-card,.module-shell,.section,.step-card,.result-card,.widget,.summary-card,.cardx,.stage,.sheet,.table-wrap{
+  background:linear-gradient(180deg,#ffffff 0%, #fbfdff 100%) !important;
+  border:1px solid var(--border) !important;
+  border-radius:16px !important;
+  box-shadow:var(--shadow) !important;
+  color:var(--text) !important;
+}
+.export-bar,.toolbar,.action-row,.actions-row{background:rgba(255,255,255,.75) !important;border:1px solid var(--border) !important;border-radius:14px !important;backdrop-filter:blur(10px);box-shadow:var(--shadow) !important}
+h1,h2,h3,.hero-title,.module-title,.section-title,.step-title{color:#173754 !important}
+.section-title,.module-title{font-family:Georgia,"Times New Roman",serif !important;font-weight:700;letter-spacing:.01em}
+label,.label,.helper,.meta,.muted,.subtle,.hint{color:var(--muted) !important}
+input,select,textarea{background:#f9fbfd !important;color:var(--text) !important;border:1px solid rgba(24,48,68,.12) !important;border-radius:12px !important;box-shadow:none !important}
+input:focus,select:focus,textarea:focus{outline:none !important;border-color:rgba(45,95,134,.35) !important;box-shadow:0 0 0 4px rgba(45,95,134,.08) !important}
+input::placeholder,textarea::placeholder{color:#95a4b2 !important}
+button,.btn,.cli-btn{border-radius:12px !important;transition:all .18s ease !important}
+button:hover,.btn:hover,.cli-btn:hover{transform:translateY(-1px)}
+.btn-primary,.primary,.btn.save-main{background:linear-gradient(135deg,var(--gold),var(--gold-soft)) !important;color:#163149 !important;border:1px solid rgba(201,151,78,.35) !important;font-weight:700 !important}
+.btn-outline,.secondary,.ghost,.cli-btn{background:#ffffff !important;color:var(--accent) !important;border:1px solid rgba(24,48,68,.12) !important}
+.danger,.btn-danger{background:#fff6f6 !important;color:var(--danger) !important;border:1px solid rgba(199,91,91,.18) !important}
+.success,.ok,.toast-success{background:#f1fbf7 !important;color:var(--ok) !important;border:1px solid rgba(46,159,122,.18) !important}
+.result-box,.highlight,.main-result,.pill-result,.kpi-main,.summary-highlight{background:linear-gradient(135deg,#c9974e,#e6c997) !important;color:#183044 !important;border:none !important;box-shadow:0 14px 30px rgba(201,151,78,.18) !important}
+.result-box *, .highlight *, .main-result *, .pill-result *, .kpi-main *, .summary-highlight *{color:#183044 !important}
+.badge,.tag,.pill{border-radius:999px !important;border:1px solid rgba(201,151,78,.24) !important;background:rgba(201,151,78,.10) !important;color:#8f6428 !important}
+#save-toast,.toast{background:#173754 !important;color:#fff !important;border:1px solid rgba(201,151,78,.28) !important;border-radius:14px !important;box-shadow:0 12px 26px rgba(23,55,84,.18) !important}
+table{border-collapse:collapse !important}
+th,td{border-bottom:1px solid rgba(24,48,68,.08) !important}
+th{color:#597086 !important;text-transform:uppercase;letter-spacing:.06em;font-size:11px !important;background:#fafcfe}
+td:last-child,.num,.money,.value{text-align:right}
+hr,.divider{border-color:rgba(24,48,68,.08) !important}
+@media (max-width: 768px){
+  .export-bar,.toolbar,.action-row,.actions-row{position:sticky;bottom:8px;z-index:30;overflow:auto;white-space:nowrap}
+  button,.btn,.cli-btn{min-height:42px}
+}
+</style>
+</head><body>
+    <div class="brand-band">
+      <div class="brand-grid">
+        <div>
+          <div class="brand-name">${escHtml(marcaNome)}</div>
+          <div class="brand-role">${escHtml(marcaTitulo)}</div>
+          <div style="height:12px"></div>
+          <div class="doc-title">Relatório INSS de Obra</div>
+          <div class="doc-sub">Aferição indireta de obras · resumo técnico da simulação</div>
+        </div>
+        <div class="meta">
+          <div>Emitido em: <strong>${escHtml(d.dataSimulacao||today())}</strong></div>
+          <div>Competência: <strong>${escHtml(o.compLabel||o.comp||'—')}</strong></div>
+        </div>
+      </div>
+    </div>
     <div class="grid">
       ${box('Contratante', [['Nome',c.nome],['CPF/CNPJ',c.cpfcnpj],['Cidade',c.cidade],['Endereço',c.endereco],['Processo',c.processo],['Data de referência',c.data]])}
       ${box('Dados da obra', [['UF',o.uf],['Destinação',o.destNome||o.dest],['Tipo construtivo',o.tipoNome||o.tipo],['Área principal', o.ap?`${o.ap} m²`:'—'],['Área coberta', o.ac?`${o.ac} m²`:'—'],['Área descoberta', o.ad?`${o.ad} m²`:'—'],['Área resultante',e2.ares],['VAU',o.vau],['Concreto usinado', o.usaConcreto?'Sim':'Não']])}
@@ -3882,10 +4443,14 @@ function montarHtmlRelatorioINSS(d){
         <tr><td>INSS pago informado</td><td>${escHtml(valorLimpo(e3.rec))}</td></tr>
         <tr><td>INSS a pagar total</td><td><strong>${escHtml(valorLimpo(e3.ipg))}</strong></td></tr>
       </table></div>
-      <div class="pill"><div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:.08em">Resultado principal</div><div class="big">${escHtml(valorLimpo(e3.ipg||e3.inss_pagar_a||e2.inss_a))}</div><div style="font-size:11px;color:#666;margin-top:4px">Consolidado com base nos dados preenchidos e remunerações informadas.</div></div>
+      <div class="pill">
+        <div class="label">Resultado principal</div>
+        <div class="big">${escHtml(valorLimpo(e3.ipg||e3.inss_pagar_a||e2.inss_a))}</div>
+        <div style="font-size:11px;opacity:.85;margin-top:4px">Consolidado com base nos dados preenchidos e remunerações informadas.</div>
+      </div>
     </div>
     <div class="card full"><h2>Remunerações mensais lançadas</h2><table><thead><tr><th>Mês</th><th>Remuneração</th><th>ICM</th><th>Multa</th><th>Juros</th><th>MAED</th></tr></thead><tbody>${rems}</tbody></table></div>
-    <div class="foot">Documento gerado automaticamente pelo sistema. Revise os parâmetros técnicos antes de usar o relatório em contexto oficial.</div>
+    <div class="foot">Documento gerado automaticamente pelo sistema de Sarah Franco Contadora. Revise os parâmetros técnicos antes de usar o relatório em contexto oficial.</div>
   </body></html>`;
 }
 function coletarDadosInssAtuais(){
@@ -4608,7 +5173,13 @@ function rendHist(){
         '<span style="font-size:12px;font-weight:600;color:var(--gold-l)">ISSQN: '+(h.issqn||'—')+'</span>'+
       '</div>';
     var btns=document.createElement('div');
-    btns.style.cssText='display:flex;gap:6px;margin-top:.625rem';
+    btns.style.cssText='display:flex;gap:6px;margin-top:.625rem;flex-wrap:wrap';
+    var bLoad=document.createElement('button');
+    bLoad.type='button';
+    bLoad.textContent='Carregar';
+    bLoad.setAttribute('data-issqn-idx',String(idx));
+    bLoad.setAttribute('data-issqn-action','load');
+    bLoad.style.cssText='background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--accent2);border-radius:5px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit;pointer-events:auto';
     var bPdf=document.createElement('button');
     bPdf.type='button';
     bPdf.textContent='📄 PDF';
@@ -4621,6 +5192,7 @@ function rendHist(){
     bDel.setAttribute('data-issqn-idx',String(idx));
     bDel.setAttribute('data-issqn-action','del');
     bDel.style.cssText='background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171;border-radius:5px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit;pointer-events:auto';
+    btns.appendChild(bLoad);
     btns.appendChild(bPdf);
     btns.appendChild(bDel);
     card.appendChild(info);
@@ -4636,7 +5208,11 @@ function rendHist(){
     ev.stopPropagation();
     var i=btn.getAttribute('data-issqn-idx');
     var action=btn.getAttribute('data-issqn-action');
-    if(action==='pdf') window._issqnPdf(i);
+    if(action==='load'){
+      var item=(S.historico||[])[parseInt(i,10)];
+      if(item&&item.id!==undefined) carregarHistIssqn(item.id);
+    }
+    else if(action==='pdf') window._issqnPdf(i);
     else if(action==='del') window._issqnDel(i);
   };
 }
@@ -4795,641 +5371,829 @@ window.renderNovoCliente = window.renderNovoCliente || renderNovoCliente;
 
 </script>
 
-<script id="oai-final-patch">
+
+<script id="oai-clean-professional-patch">
 (function(){
   const LS_CLIENTES = 'clientes_compartilhados';
   const LS_INSS = 'inss_simulacoes';
   const LS_ISSQN = 'issqn_hist';
 
-  function safeParse(v, fallback){
-    try{
-      const out = JSON.parse(v);
-      return Array.isArray(fallback) ? (Array.isArray(out) ? out : fallback) : (out ?? fallback);
-    }catch(_){ return fallback; }
-  }
-  function lsGet(key, fallback){ return safeParse(localStorage.getItem(key), fallback); }
-  function lsSet(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
+  const html = String.raw;
+
+  function q(id){ return document.getElementById(id); }
+  function parseJSON(value, fallback){ try{ const out = JSON.parse(value); return out ?? fallback; }catch(_){ return fallback; } }
+  function getLS(key, fallback){ return parseJSON(localStorage.getItem(key), fallback); }
+  function setLS(key, value){ localStorage.setItem(key, JSON.stringify(value)); }
+  function text(v){ return String(v ?? '').trim(); }
+  function uid(prefix='local'){ return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`; }
+  function onlyDigits(v){ return String(v||'').replace(/\D/g,''); }
+  function lower(v){ return text(v).toLowerCase(); }
   function nowIso(){ return new Date().toISOString(); }
-  function nowHuman(){
+  function todayBr(){
     const d = new Date();
-    return d.toLocaleString('pt-BR');
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
   }
-  function uid(){
-    return 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2,8);
-  }
-  function cloneJsonSafe(obj){
-    try{ return JSON.parse(JSON.stringify(obj)); }catch(_){ return obj; }
-  }
-  function pickClientFields(raw){
+  function getActiveModule(){ return window._activeModule || 'issqn'; }
+  function collectionName(){ return 'clientes_compartilhados'; }
+  window.getClientCollection = collectionName;
+
+  function normalizeClient(raw={}){
     return {
-      id: raw.id || uid(),
-      docId: raw.docId || null,
-      nome: raw.nome || '',
-      cpfcnpj: raw.cpfcnpj || '',
-      cidade: raw.cidade || '',
-      uf: raw.uf || '',
-      endereco: raw.endereco || '',
-      processo: raw.processo || '',
-      telefone: raw.telefone || '',
-      origem: raw.origem || (window._activeModule || 'issqn'),
-      criadoEm: raw.criadoEm || nowIso()
+      id: raw.id || uid('cli'),
+      docId: raw.docId || '',
+      nome: text(raw.nome),
+      cpfcnpj: text(raw.cpfcnpj),
+      cidade: text(raw.cidade),
+      uf: text(raw.uf).toUpperCase(),
+      endereco: text(raw.endereco),
+      processo: text(raw.processo),
+      telefone: text(raw.telefone),
+      origem: text(raw.origem || getActiveModule() || 'manual'),
+      criadoEm: raw.criadoEm || nowIso(),
+      atualizadoEm: nowIso()
     };
   }
-  function getLocalClients(){
-    return lsGet(LS_CLIENTES, []);
-  }
-  function setLocalClients(arr){
-    lsSet(LS_CLIENTES, arr);
-  }
-  function upsertLocalClient(dados){
-    let list = getLocalClients();
-    const key = (dados.cpfcnpj || '').replace(/\D/g,'');
-    let idx = -1;
-    if(key) idx = list.findIndex(c => (c.cpfcnpj || '').replace(/\D/g,'') === key);
-    if(idx < 0 && dados.nome) idx = list.findIndex(c => (c.nome || '').trim().toLowerCase() === dados.nome.trim().toLowerCase());
-    if(idx >= 0){
-      list[idx] = { ...list[idx], ...dados, id: list[idx].id || dados.id || uid() };
-      setLocalClients(list);
-      return list[idx];
-    }
-    const novo = { ...dados, id: dados.id || uid() };
-    list.unshift(novo);
-    setLocalClients(list.slice(0,500));
-    return novo;
-  }
-  function deleteLocalClient(id){
-    const list = getLocalClients().filter(c => String(c.id) !== String(id) && String(c.docId||'') !== String(id));
-    setLocalClients(list);
-  }
-  function mergeClients(localArr, remoteArr){
-    const out = [...localArr];
-    for(const r of remoteArr){
-      const dados = pickClientFields(r);
-      const key = (dados.cpfcnpj || '').replace(/\D/g,'');
-      let idx = -1;
-      if(key) idx = out.findIndex(c => (c.cpfcnpj || '').replace(/\D/g,'') === key);
-      if(idx < 0 && dados.nome) idx = out.findIndex(c => (c.nome || '').trim().toLowerCase() === dados.nome.trim().toLowerCase());
-      if(idx >= 0) out[idx] = { ...out[idx], ...dados };
-      else out.push(dados);
-    }
+
+  function mergeUniqueByKey(items, type){
+    const out=[];
+    const seen=new Map();
+    items.forEach((item)=>{
+      if(!item) return;
+      let key='';
+      if(type==='client') key = onlyDigits(item.cpfcnpj) || `nome:${lower(item.nome)}`;
+      else key = String(item.id||item.docId||'');
+      if(!key) key = uid('tmp');
+      if(!seen.has(key)){
+        seen.set(key, out.length);
+        out.push(item);
+      }else{
+        const idx = seen.get(key);
+        out[idx] = { ...out[idx], ...item };
+      }
+    });
     return out;
   }
 
-  window.getClientCollection = function(){ return 'clientes_compartilhados'; };
+  function getLocalClients(){ return Array.isArray(getLS(LS_CLIENTES, [])) ? getLS(LS_CLIENTES, []) : []; }
+  function setLocalClients(arr){ setLS(LS_CLIENTES, mergeUniqueByKey(arr, 'client').slice(0, 500)); }
+  function upsertLocalClient(raw){
+    const client = normalizeClient(raw);
+    const list = getLocalClients();
+    const keyDoc = onlyDigits(client.cpfcnpj);
+    const idx = list.findIndex(c => (keyDoc && onlyDigits(c.cpfcnpj)===keyDoc) || (!keyDoc && lower(c.nome)===lower(client.nome)));
+    if(idx >= 0){
+      list[idx] = { ...list[idx], ...client, id: list[idx].id || client.id, atualizadoEm: nowIso() };
+      setLocalClients(list);
+      return list[idx];
+    }
+    list.unshift(client);
+    setLocalClients(list);
+    return client;
+  }
 
-  window.salvarContratante = async function salvarContratantePatched(){
-    const nome = (window.el?.('c_nome')?.value || '').trim();
-    if(!nome){ if(window.$) $('c_saved_msg','Informe o nome do contratante.'); return; }
-    const dados = pickClientFields({
-      nome,
-      cpfcnpj: window.el?.('c_cpfcnpj')?.value || '',
-      cidade: window.el?.('c_cidade')?.value || '',
-      uf: window.el?.('uf')?.value || '',
-      endereco: window.el?.('c_endereco')?.value || '',
-      processo: window.el?.('c_processo')?.value || '',
+  async function persistRemoteClient(client){
+    try{
+      if(!(window._user && window.FB)) return;
+      await window.FB.addDoc(window.FB.col(collectionName()), { ...client, uid: window._user.uid, criadoEm: client.criadoEm || nowIso() });
+    }catch(_){ }
+  }
+
+  function currentClientFromInss(){
+    return normalizeClient({
+      nome: q('c_nome')?.value,
+      cpfcnpj: q('c_cpfcnpj')?.value,
+      cidade: q('c_cidade')?.value,
+      uf: q('uf')?.value,
+      endereco: q('c_endereco')?.value,
+      processo: q('c_processo')?.value,
       origem: 'inss'
     });
-    upsertLocalClient(dados);
-    try{
-      if(window.FB && window._user){
-        const payload = { ...dados, uid: window._user.uid, criadoEm: window.FB.serverTimestamp ? window.FB.serverTimestamp() : nowIso() };
-        await window.FB.addDoc(window.FB.col(getClientCollection()), payload);
-      }
-    }catch(_){}
-    if(window.$) $('c_saved_msg','✓ Salvo como cliente!');
-    if(window.showToast) showToast('✓ Cliente salvo');
-    setTimeout(()=>{ try{ if(window.$) $('c_saved_msg',''); }catch(_){} }, 2500);
-  };
-  window.salvarNovoCliente_direto = window.salvarContratante;
+  }
 
-  window.renderNovoCliente = function renderNovoClientePatched(){
-    const body = window.el?.('cp-body'); if(!body) return;
-    body.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:.875rem">
-        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600">Novo cliente · <span style="color:var(--text)">${window.getSystemMeta ? getSystemMeta().label : ''}</span></div>
-        <div class="login-field"><label>Nome *</label><input type="text" id="nc-nome" placeholder="Nome completo" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:9px 11px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;width:100%"></div>
-        <div class="login-field"><label>CPF / CNPJ</label><input type="text" id="nc-cpf" placeholder="000.000.000-00" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:9px 11px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;width:100%"></div>
-        <div class="login-field"><label>Cidade</label><input type="text" id="nc-cidade" placeholder="Cidade" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:9px 11px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;width:100%"></div>
-        <div class="login-field"><label>UF</label><input type="text" id="nc-uf" placeholder="BA" maxlength="2" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:9px 11px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;width:100%"></div>
-        <div class="login-field"><label>Endereço</label><input type="text" id="nc-end" placeholder="Logradouro, número" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:9px 11px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;width:100%"></div>
-        <div class="login-field"><label>Processo / Identificação</label><input type="text" id="nc-proc" placeholder="Nº do processo" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:9px 11px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;width:100%"></div>
-        <div id="nc-msg" style="font-size:12px;color:var(--red);min-height:14px"></div>
-        <button onclick="salvarNovoClienteUnificado()" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:var(--r2);padding:10px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;width:100%">Salvar cliente</button>
-      </div>`;
-  };
-
-  window.salvarNovoClienteUnificado = async function salvarNovoClienteUnificadoPatched(){
-    const nome = (window.el?.('nc-nome')?.value || '').trim();
-    if(!nome){ if(window.txt) txt('nc-msg','Informe o nome.'); return; }
-    const dados = pickClientFields({
-      nome,
-      cpfcnpj: window.el?.('nc-cpf')?.value || '',
-      cidade: window.el?.('nc-cidade')?.value || '',
-      uf: (window.el?.('nc-uf')?.value || '').toUpperCase(),
-      endereco: window.el?.('nc-end')?.value || '',
-      processo: window.el?.('nc-proc')?.value || '',
-      origem: window._activeModule || 'issqn'
+  function currentClientFromIssqn(){
+    return normalizeClient({
+      nome: q('nome')?.value,
+      cpfcnpj: q('documento')?.value,
+      cidade: q('cidade')?.value,
+      uf: (window.S && window.S.ufCont) || '',
+      endereco: q('endereco')?.value,
+      processo: q('identificacao')?.value,
+      origem: 'issqn'
     });
-    upsertLocalClient(dados);
-    try{
-      if(window.FB && window._user){
-        const payload = { ...dados, uid: window._user.uid, criadoEm: window.FB.serverTimestamp ? window.FB.serverTimestamp() : nowIso() };
-        await window.FB.addDoc(window.FB.col(getClientCollection()), payload);
-      }
-    }catch(_){}
-    if(window.showToast) showToast('✓ Cliente salvo!');
-    if(window.switchPanelTab) switchPanelTab('clientes');
-  };
-  window.salvarNovoCliente = window.salvarNovoClienteUnificado;
+  }
 
-  window.renderClientes = async function renderClientesPatched(){
-    const body = window.el?.('cp-body'); if(!body) return;
-    body.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem;font-size:12px">Carregando...</div>';
-    let local = getLocalClients();
-    let remote = [];
-    try{
-      if(window.FB && window._user){
-        const q = window.FB.query(window.FB.col(getClientCollection()), window.FB.where('uid','==',window._user.uid));
-        const snap = await window.FB.getDocs(q);
-        remote = snap.docs.map(d => ({ docId:d.id, ...d.data() }));
-      }
-    }catch(_){}
-    const docs = mergeClients(local, remote).sort((a,b)=> String(a.nome||'').localeCompare(String(b.nome||''), 'pt-BR'));
-    setLocalClients(docs.map(pickClientFields));
-    if(!docs.length){
-      body.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem;font-size:12px">Nenhum cliente cadastrado ainda.<br><span style="font-size:11px">Cadastre em qualquer módulo e use nos dois sistemas.</span></div>';
-      return;
-    }
-    body.innerHTML = '';
-    docs.forEach(function(c){
-      const cid = c.id || c.docId;
-      const card = document.createElement('div');
-      card.className = 'cli-card';
-      card.style.cssText = 'padding:.875rem;margin-bottom:.625rem';
-      const info=document.createElement('div');
-      info.innerHTML=
-        '<div class="cli-name">'+(c.nome||'Sem nome')+'</div>'+
-        '<div class="cli-meta" style="margin-top:3px">'+[c.cpfcnpj,c.cidade,c.uf].filter(Boolean).join(' · ')+'</div>'+
-        (c.processo?'<div class="cli-meta" style="margin-top:2px">Proc: '+c.processo+'</div>':'');
-      const acoes=document.createElement('div');
-      acoes.style.cssText='margin-top:.625rem;display:flex;gap:6px';
-      const mkBtn=function(txt,css,fn){
-        const b=document.createElement('button');
-        b.textContent=txt;
-        b.style.cssText=css+'font-family:var(--sans);font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;';
-        b.addEventListener('click',fn);
-        return b;
-      };
-      acoes.appendChild(mkBtn('Carregar','background:var(--accent-dim);border:1px solid rgba(59,130,246,.2);color:var(--accent2);',function(){if(typeof window.carregarCliente==='function')window.carregarCliente(cid);}));
-      acoes.appendChild(mkBtn('Excluir','background:var(--red-dim);border:1px solid rgba(239,68,68,.2);color:var(--red);',function(){if(typeof window.excluirCliente==='function')window.excluirCliente(cid,this);}));
-      card.appendChild(info);
-      card.appendChild(acoes);
-      body.appendChild(card);
-    });
-  };
+  function currentClientFromModule(module){
+    return module === 'inss' ? currentClientFromInss() : currentClientFromIssqn();
+  }
 
-  window.carregarCliente = async function carregarClientePatched(id){
+  async function saveSharedClientFromModule(module){
+    const client = currentClientFromModule(module);
+    if(!client.nome) throw new Error('Informe o nome do cliente.');
+    const saved = upsertLocalClient(client);
+    persistRemoteClient(saved);
+    return saved;
+  }
+
+  function showInlineMessage(id, msg, ok=true){
+    const node = q(id);
+    if(!node) return;
+    node.textContent = msg;
+    node.style.color = ok ? 'var(--green2)' : 'var(--red)';
+    if(msg) setTimeout(()=>{ if(node.textContent===msg) node.textContent=''; }, 3000);
+  }
+
+  window.salvarContratante = async function salvarContratanteProfissional(){
     try{
-      let c = getLocalClients().find(x => String(x.id) === String(id) || String(x.docId||'') === String(id));
-      if(!c && window.FB && window._user){
-        try{
-          const snap = await window.FB.getDoc(window.FB.doc(getClientCollection(), id));
-          if(snap.exists()) c = { docId:id, ...snap.data() };
-        }catch(_){}
-      }
-      if(!c) return;
-      const set=(eid,v)=>{ const e=window.el?.(eid); if(e) e.value=v || ''; };
-      if(window._activeModule==='inss'){
-        set('c_nome', c.nome);
-        set('c_cpfcnpj', c.cpfcnpj);
-        set('c_cidade', c.cidade);
-        set('c_endereco', c.endereco);
-        set('c_processo', c.processo);
-        if(c.uf){ const ufInss = window.el?.('uf'); if(ufInss) ufInss.value = c.uf; }
-        if(typeof window.autoVAU === 'function') autoVAU();
-        if(typeof window.calcular === 'function') calcular();
-        if(window.$) $('c_saved_msg','✓ Cliente carregado no INSS');
-        setTimeout(()=>{ try{ if(window.$) $('c_saved_msg',''); }catch(_){} },3000);
-      } else {
-        set('nome', c.nome);
-        set('documento', c.cpfcnpj);
-        set('cidade', c.cidade);
-        set('endereco', c.endereco);
-        set('identificacao', c.processo);
-        if(c.uf){ const ufIss = window.el?.('ufCont'); if(ufIss) ufIss.value = c.uf; }
-        if(typeof window.updRes === 'function') updRes();
-      }
-      if(typeof window.closePanel === 'function') closePanel();
-      if(window.showToast) showToast(`✓ Cliente carregado em ${window.getSystemMeta ? getSystemMeta().label : 'sistema'}`);
+      const saved = await saveSharedClientFromModule(getActiveModule());
+      if(getActiveModule()==='inss') showInlineMessage('c_saved_msg', '✓ Cliente salvo com sucesso.');
+      if(typeof window.showToast === 'function') window.showToast(`✓ Cliente salvo: ${saved.nome}`);
+      if(typeof window.renderClientes === 'function' && q('tab-clientes')?.classList.contains('on')) window.renderClientes();
     }catch(e){
-      alert('Erro ao carregar cliente: ' + e.message);
+      if(getActiveModule()==='inss') showInlineMessage('c_saved_msg', e.message, false);
+      else if(typeof window.showToast === 'function') window.showToast('Erro: ' + e.message);
     }
   };
 
-  window.excluirCliente = async function excluirClientePatched(id,btn){
+  function fillIssqnFromClient(c){
+    const set=(id,v)=>{ const el=q(id); if(el) el.value=v||''; };
+    set('nome', c.nome); set('documento', c.cpfcnpj); set('cidade', c.cidade); set('endereco', c.endereco); set('identificacao', c.processo);
+    if(window.S){
+      if(c.uf) window.S.ufCont = c.uf;
+      if(window._issqnOk && typeof window.updRes === 'function') window.updRes();
+    }
+  }
+  function fillInssFromClient(c){
+    const set=(id,v)=>{ const el=q(id); if(el) el.value=v||''; };
+    set('c_nome', c.nome); set('c_cpfcnpj', c.cpfcnpj); set('c_cidade', c.cidade); set('c_endereco', c.endereco); set('c_processo', c.processo);
+    if(c.uf && q('uf')) q('uf').value = c.uf;
+    try{ if(typeof window.autoVAU === 'function') window.autoVAU(); }catch(_){ }
+    try{ if(typeof window.calcular === 'function') window.calcular(); }catch(_){ }
+  }
+  window.carregarCliente = async function carregarClienteProfissional(id){
+    let client = getLocalClients().find(c => String(c.id)===String(id) || String(c.docId||'')===String(id));
+    if(!client && window._user && window.FB){
+      try{
+        const snap = await window.FB.getDoc(window.FB.doc(collectionName(), id));
+        if(snap.exists()) client = normalizeClient({ docId: snap.id, ...snap.data() });
+      }catch(_){ }
+    }
+    if(!client){ if(window.showToast) window.showToast('Cliente não encontrado.'); return; }
+    if(getActiveModule()==='inss') fillInssFromClient(client); else fillIssqnFromClient(client);
+    if(typeof window.closePanel === 'function') window.closePanel();
+    if(getActiveModule()==='inss') showInlineMessage('c_saved_msg', '✓ Cliente carregado no INSS');
+    if(window.showToast) window.showToast(`✓ Cliente carregado em ${getActiveModule()==='inss'?'INSS':'ISSQN'}`);
+  };
+
+  window.excluirCliente = async function excluirClienteProfissional(id, btn){
     if(!confirm('Excluir este cliente?')) return;
     const prev = btn ? btn.textContent : '';
     if(btn) btn.textContent = '...';
     try{
-      deleteLocalClient(id);
-      try{
-        if(window.FB && window._user && !String(id).startsWith('local-')){
-          await window.FB.deleteDoc(window.FB.doc(getClientCollection(), id));
-        }
-      }catch(_){}
-      if(typeof window.renderClientes === 'function') renderClientes();
+      setLocalClients(getLocalClients().filter(c => String(c.id)!==String(id) && String(c.docId||'')!==String(id)));
+      if(window._user && window.FB && !String(id).startsWith('cli-') && !String(id).startsWith('local-')){
+        try{ await window.FB.deleteDoc(window.FB.doc(collectionName(), id)); }catch(_){ }
+      }
+      if(typeof window.renderClientes==='function') window.renderClientes();
     }catch(e){
       alert('Erro: ' + e.message);
       if(btn) btn.textContent = prev || 'Excluir';
     }
   };
 
-  function localFindInss(id){
-    const local = lsGet(LS_INSS, []);
-    return local.find(x => String(x.id) === String(id) || String(x.docId||'') === String(id)) || null;
+  async function mergedClients(){
+    let list = getLocalClients();
+    if(window._user && window.FB){
+      try{
+        const qy = window.FB.query(window.FB.col(collectionName()), window.FB.where('uid','==',window._user.uid));
+        const snap = await window.FB.getDocs(qy);
+        const remote=[];
+        snap.forEach(doc => remote.push(normalizeClient({ docId: doc.id, ...doc.data() })));
+        list = mergeUniqueByKey([...list, ...remote], 'client');
+        setLocalClients(list);
+      }catch(_){ }
+    }
+    return list.sort((a,b)=> String(a.nome||'').localeCompare(String(b.nome||''), 'pt-BR'));
   }
 
-  window.salvarRelatorio = async function salvarRelatorioPatched(){
-    try{
-      const destNomes={'res_uni':'Residencial Unifamiliar','res_multi':'Residencial Multifamiliar','comercial':'Comercial Salas e Lojas','garagens':'Edifício de Garagens','galpao':'Galpão Industrial','casa_pop':'Casa Popular','conj_hab':'Conjunto Habitacional Popular'};
-      const tipoNomes={'alvenaria':'Alvenaria','madeira':'Madeira','mista':'Mista'};
-      const comp = window.$id?.('comp')?.value || '';
-      const [ano,mes] = comp.split('-');
-      const now = new Date();
-      const rows = [...document.querySelectorAll('#monthly-rows .mrow')].map(row=>({
-        mes: row.querySelector('input[type=month]')?.value || '',
-        rem: row.querySelector('.rem-inp')?.value || '0',
-        icm: row.querySelector('.icm-inp')?.value || '0',
-        multa: row.querySelector('.multa-inp')?.value || '75',
-        juros: row.querySelector('.juros-inp')?.value || '0',
-        maed: row.querySelector('.maed-inp')?.value || '0'
-      }));
-      const dados = {
-        id: uid(),
-        titulo: window.$id?.('c_nome')?.value || 'Simulação sem nome',
-        dataSimulacao: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`,
-        contratante:{
-          nome: window.$id?.('c_nome')?.value || '',
-          cpfcnpj: window.$id?.('c_cpfcnpj')?.value || '',
-          cidade: window.$id?.('c_cidade')?.value || '',
-          endereco: window.$id?.('c_endereco')?.value || '',
-          processo: window.$id?.('c_processo')?.value || '',
-          data: window.$id?.('c_data')?.value || ''
-        },
-        obra:{
-          uf: window.$id?.('uf')?.value || '',
-          dest: window.$id?.('dest')?.value || '',
-          destNome: destNomes[window.$id?.('dest')?.value] || window.$id?.('dest')?.value || '',
-          tipo: window.$id?.('tipo')?.value || '',
-          tipoNome: tipoNomes[window.$id?.('tipo')?.value] || window.$id?.('tipo')?.value || '',
-          ap: window.$id?.('ap')?.value || '0',
-          ac: window.$id?.('ac')?.value || '0',
-          ad: window.$id?.('ad')?.value || '0',
-          vau: window.$id?.('vau')?.value || '0',
-          comp,
-          compLabel: comp && mes && window.MESES_PT ? `${MESES_PT[parseInt(mes)-1]}/${ano}` : '—',
-          usaConcreto: typeof window.usaConc !== 'undefined' ? window.usaConc : false
-        },
-        params:{
-          peq_a: window.$id?.('perc_equiv_a')?.value || '',
-          pmo_a: window.$id?.('pmo_val_a')?.value || '',
-          fs_a: window.$id?.('fator_social_a')?.value || '',
-          peq_b: '100',
-          pmo_b: window.$id?.('pmo_val_b')?.value || '',
-          fs_b: '100'
-        },
-        etapa2:{
-          ares: window.$id?.('area-res-display')?.textContent || '—',
-          aeq_a: window.$id?.('a_aeq')?.textContent || '—',
-          custo_a: window.$id?.('a_custo')?.textContent || '—',
-          rmt_a: window.$id?.('a_rmt')?.textContent || '—',
-          inss_a: window.$id?.('a_res_sem')?.textContent || '—',
-          aeq_b: window.$id?.('b_aeq')?.textContent || '—',
-          custo_b: window.$id?.('b_custo')?.textContent || '—',
-          rmt_b: window.$id?.('b_rmt')?.textContent || '—',
-          inss_b: window.$id?.('b_res_sem')?.textContent || '—'
-        },
-        etapa3:{
-          inss_devido_a: window.$id?.('ca_sd')?.textContent || '—',
-          inss_pagar_a: window.$id?.('ca_ipg')?.textContent || '—',
-          economia_a: window.$id?.('ca_eco')?.textContent || '—',
-          eco_pct_a: window.$id?.('ca_eco_pct')?.textContent || '—',
-          inss_devido_b: window.$id?.('cb_sd')?.textContent || '—',
-          inss_pagar_b: window.$id?.('cb_ipg')?.textContent || '—',
-          rmt_a: window.$id?.('c_rmt_a')?.value || '',
-          rmt_b: window.$id?.('c_rmt_b')?.value || '',
-          tot_rem: window.$id?.('c_tot')?.textContent || '—',
-          tot_cpp: window.$id?.('c_cpp')?.textContent || '—',
-          tot_extras: window.$id?.('c_extras')?.textContent || '—',
-          ipg: window.$id?.('c_ipg_tot')?.textContent || '—',
-          rec: window.$id?.('c_rec')?.value || '',
-          remuneracoes: rows
-        },
-        uid: window._user?.uid || 'local',
-        criadoEm: nowIso()
-      };
-      const local = lsGet(LS_INSS, []);
-      local.unshift(cloneJsonSafe(dados));
-      lsSet(LS_INSS, local.slice(0,100));
-      try{
-        if(window.FB && window._user){
-          const remotePayload = { ...dados, criadoEm: window.FB.serverTimestamp ? window.FB.serverTimestamp() : nowIso(), uid: window._user.uid };
-          const ref = await window.FB.addDoc(window.FB.col(getSimCollection('inss')), remotePayload);
-          if(ref?.id){
-            const saved = lsGet(LS_INSS, []);
-            const idx = saved.findIndex(x => String(x.id) === String(dados.id));
-            if(idx >= 0){ saved[idx].docId = ref.id; lsSet(LS_INSS, saved); }
-          }
-        }
-      }catch(e){
-        console.warn('Firebase indisponível:', e?.message || e);
+  window.renderClientes = async function renderClientesProfissional(){
+    const body = q('cp-body'); if(!body) return;
+    const all = await mergedClients();
+    body.innerHTML = html`
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        <input id="cp-search-clientes" type="text" placeholder="Buscar por nome, documento, cidade, UF ou processo" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 12px;color:var(--text);font:inherit;outline:none;width:100%">
+        <div id="cp-clientes-lista" style="display:flex;flex-direction:column;gap:.625rem"></div>
+      </div>`;
+    const search = q('cp-search-clientes');
+    const listNode = q('cp-clientes-lista');
+    const render = () => {
+      const term = lower(search?.value || '');
+      const filtered = all.filter(c => [c.nome,c.cpfcnpj,c.cidade,c.uf,c.processo,c.origem].some(v => lower(v).includes(term)));
+      if(!filtered.length){
+        listNode.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem;font-size:12px">Nenhum cliente encontrado.</div>';
+        return;
       }
-      if(window.showToast) showToast('✓ Simulação salva com sucesso!');
-      if(typeof window.openPanel === 'function') openPanel('relatorios-inss');
-    }catch(e){
-      alert('Erro ao salvar simulação do INSS: ' + e.message);
-      console.error(e);
-    }
-  };
-
-  window.renderRelatorios = async function renderRelatoriosPatched(){
-    const body = window.el?.('cp-body'); if(!body) return;
-    body.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem;font-size:12px">Carregando simulações INSS...</div>';
-    let docs = lsGet(LS_INSS, []);
-    try{
-      if(window.FB && window._user){
-        const q = window.FB.query(window.FB.col(getSimCollection('inss')), window.FB.where('uid','==',window._user.uid));
-        const snap = await window.FB.getDocs(q);
-        snap.forEach(d=>{
-          const fbDoc = { docId:d.id, ...d.data() };
-          if(!docs.find(l=> String(l.docId||'')===String(d.id) || String(l.id||'')===String(d.id))) docs.push(fbDoc);
-        });
-      }
-    }catch(_){}
-    docs.sort((a,b)=> (b.id||'').toString().localeCompare((a.id||'').toString()));
-    if(!docs.length){
-      body.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem;font-size:12px">Nenhuma simulação INSS salva.<br><span style="font-size:11px">Use "Salvar simulação" na Etapa 3.</span></div>';
-      return;
-    }
-    body.innerHTML='';
-    // Guardar mapa id→dados para event delegation
-    const _docsMap={};
-    docs.forEach(function(r){
-      const c=r.contratante||{},o=r.obra||{},e2=r.etapa2||{},e3=r.etapa3||{};
-      const rid = String(r.id || r.docId || '');
-      _docsMap[rid]=r;
-      const card=document.createElement('div');
-      card.className='cli-card';
-      card.style.cssText='padding:.875rem;margin-bottom:.625rem';
-      const info=document.createElement('div');
-      info.innerHTML=
-        '<div class="cli-name">'+(c.nome||r.titulo||'Sem nome')+'</div>'+
-        '<div class="cli-meta" style="margin-top:3px">'+[o.uf,o.destNome,o.compLabel].filter(Boolean).join(' · ')+'</div>'+
-        '<div class="cli-meta" style="margin-top:3px">'+
-          '<span style="color:var(--accent2)">Sem vinc.: '+(e2.inss_a||'—')+'</span>'+
-          ' · <span style="color:var(--amber)">INSS pagar: '+(e3.ipg||e3.inss_pagar_a||'—')+'</span>'+
-        '</div>'+
-        (e3.economia_a&&e3.economia_a!=='—'?'<div class="cli-meta" style="color:var(--green2);margin-top:2px">Economia: '+e3.economia_a+'</div>':'')+
-        '<div style="font-size:10px;color:var(--muted);margin-top:3px">'+(r.dataSimulacao||'')+'</div>';
-      const acoes=document.createElement('div');
-      acoes.style.cssText='margin-top:.625rem;display:flex;gap:6px;flex-wrap:wrap';
-      function mkBtn(txt,css){
-        const b=document.createElement('button');
-        b.type='button'; b.textContent=txt;
-        b.style.cssText=css+'font-family:inherit;font-size:11px;padding:5px 12px;border-radius:5px;cursor:pointer;pointer-events:auto;';
-        return b;
-      }
-      const bC=mkBtn('Carregar','background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);color:var(--accent2);');
-      bC.setAttribute('data-inss-id',rid); bC.setAttribute('data-inss-action','load');
-      const bP=mkBtn('📄 PDF','background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--green2);');
-      bP.setAttribute('data-inss-id',rid); bP.setAttribute('data-inss-action','pdf');
-      const bX=mkBtn('🗑 Excluir','background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:var(--red);');
-      bX.setAttribute('data-inss-id',rid); bX.setAttribute('data-inss-action','del');
-      acoes.appendChild(bC); acoes.appendChild(bP); acoes.appendChild(bX);
-      card.appendChild(info); card.appendChild(acoes);
-      body.appendChild(card);
-    });
-    // Event delegation — um listener no body do painel
-    body.onclick=null;
-    body.onclick=function(ev){
-      const btn=ev.target.closest('[data-inss-id]');
-      if(!btn) return;
-      ev.stopPropagation();
-      const rid=btn.getAttribute('data-inss-id');
-      const action=btn.getAttribute('data-inss-action');
-      const r=_docsMap[rid];
-      if(action==='load'){ if(typeof window.carregarRelatorio==='function') carregarRelatorio(rid,r); }
-      else if(action==='pdf'){ if(typeof window.gerarPDFSimulacao==='function') gerarPDFSimulacao(rid,r); }
-      else if(action==='del'){ if(typeof window.excluirRelatorio==='function') excluirRelatorio(rid,btn); }
+      listNode.innerHTML = filtered.map(c => html`
+        <div class="cli-card" style="padding:.9rem">
+          <div class="cli-name">${c.nome || 'Sem nome'}</div>
+          <div class="cli-meta" style="margin-top:4px">${[c.cpfcnpj,c.cidade,c.uf].filter(Boolean).join(' · ') || 'Sem dados adicionais'}</div>
+          <div class="cli-meta" style="margin-top:3px">Origem: ${(c.origem||'manual').toUpperCase()}${c.processo ? ' · Proc/ID: ' + c.processo : ''}</div>
+          <div class="cli-actions" style="margin-top:.65rem;display:flex;gap:6px;flex-wrap:wrap">
+            <button class="cli-btn primary" data-cli-load="${c.id||c.docId}">Carregar</button>
+            <button class="cli-btn danger" data-cli-del="${c.id||c.docId}">Excluir</button>
+          </div>
+        </div>`).join('');
+      listNode.querySelectorAll('[data-cli-load]').forEach(btn => btn.addEventListener('click', ()=> window.carregarCliente(btn.getAttribute('data-cli-load'))));
+      listNode.querySelectorAll('[data-cli-del]').forEach(btn => btn.addEventListener('click', ()=> window.excluirCliente(btn.getAttribute('data-cli-del'), btn)));
     };
+    search?.addEventListener('input', render);
+    render();
   };
 
-  
-  window.carregarRelatorio = async function carregarRelatorioPatched(id, dadosLocais){
-    try{
-      let r = dadosLocais || localFindInss(id);
-      if(!r && window.FB && window._user && !String(id).startsWith('local-')){
-        try{
-          const snap = await window.FB.getDoc(window.FB.doc(getSimCollection('inss'), id));
-          if(snap.exists()) r = { docId:id, ...snap.data() };
-        }catch(_){}
-      }
-      if(!r){ if(window.showToast) showToast('Simulação não encontrada.'); return; }
-      const o=r.obra||{},c=r.contratante||{},p=r.params||{},e3=r.etapa3||{};
-      const s=(eid,v)=>{ const e=window.$id?.(eid); if(e) e.value=v||''; };
-      s('c_nome',c.nome); s('c_cpfcnpj',c.cpfcnpj); s('c_cidade',c.cidade); s('c_endereco',c.endereco); s('c_processo',c.processo); s('c_data',c.data);
-      s('ap',o.ap); s('ac',o.ac); s('ad',o.ad); s('vau',o.vau);
-      if(o.uf){ const e=window.$id?.('uf'); if(e) e.value=o.uf; }
-      if(o.dest){ const e=window.$id?.('dest'); if(e) e.value=o.dest; }
-      if(o.tipo){ const e=window.$id?.('tipo'); if(e) e.value=o.tipo; }
-      if(o.comp){ const e=window.$id?.('comp'); if(e){ e.value=o.comp; if(typeof window.atualizarBadgeComp==='function') atualizarBadgeComp(); } }
-      if(typeof o.usaConcreto==='boolean' && typeof window.setConcreto==='function') setConcreto(o.usaConcreto);
-      s('perc_equiv_a',p.peq_a); s('pmo_val_a',p.pmo_a); s('fator_social_a',p.fs_a);
-      if(typeof window.calcular==='function') calcular();
-      if(e3.rmt_a) s('c_rmt_a', e3.rmt_a);
-      if(e3.rmt_b) s('c_rmt_b', e3.rmt_b);
-      const wrap = window.$id?.('monthly-rows');
-      if(wrap){
-        wrap.innerHTML='';
-        window.rowC = 0;
-        if(Array.isArray(e3.remuneracoes) && e3.remuneracoes.length){
-          e3.remuneracoes.forEach(m=>{
-            let multaRest = parseFloat(m.multa);
-            if(isNaN(multaRest) || multaRest < 75 || multaRest > 225) multaRest = 75;
-            if(typeof window.addRow === 'function') addRow({ mes:m.mes||'', rem:m.rem||'0', icm:m.icm||'0', multa:multaRest, juros:m.juros||'0', maed:m.maed||'0' });
-          });
-        } else if(typeof window.addRow === 'function'){
-          addRow({ multa:75 });
-        }
-      }
-      if(e3.rec) s('c_rec', e3.rec);
-      if(typeof window.calcCom==='function') calcCom();
-      if(typeof window.closePanel==='function') closePanel();
-      if(typeof window.goStep==='function') goStep(1);
-      if(window.showToast) showToast('✓ Simulação carregada com sucesso');
-    }catch(e){
-      if(window.showToast) showToast('Erro ao carregar: ' + e.message);
-      console.error(e);
-    }
-  };
-
-  window.excluirRelatorio = async function excluirRelatorioPatched(id,btn){
-    if(!confirm('Excluir esta simulação?')) return;
-    const prev = btn ? btn.textContent : '';
-    if(btn) btn.textContent='...';
-    try{
-      const local = lsGet(LS_INSS, []).filter(l => String(l.id)!==String(id) && String(l.docId||'')!==String(id));
-      lsSet(LS_INSS, local);
-      try{
-        if(window.FB && window._user && !String(id).startsWith('local-')){
-          await window.FB.deleteDoc(window.FB.doc(getSimCollection('inss'), id));
-        }
-      }catch(_){}
-      if(typeof window.renderRelatorios==='function') renderRelatorios();
-    }catch(e){
-      alert('Erro ao excluir: ' + e.message);
-      if(btn) btn.textContent = prev || 'Excluir';
-    }
-  };
-
-  window.renderHistIssqn = async function renderHistIssqnPatched(){
-    const body = window.el?.('cp-body'); if(!body) return;
-    body.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem;font-size:12px">Carregando...</div>';
-    let hist = lsGet(LS_ISSQN, []);
-    try{
-      if(window.FB && window._user){
-        const q = window.FB.query(window.FB.col(getSimCollection('issqn')), window.FB.where('uid','==',window._user.uid));
-        const snap = await window.FB.getDocs(q);
-        const remote = snap.docs.map(d => ({ docId:d.id, ...d.data() }));
-        const byLocal = [...hist];
-        remote.forEach(item=>{
-          if(!byLocal.find(h => String(h.docId||'')===String(item.docId||'') || String(h.id||'')===String(item.id||''))) byLocal.push(item);
-        });
-        hist = byLocal;
-      }
-    }catch(_){}
-    hist.sort((a,b)=> (b.id||'').toString().localeCompare((a.id||'').toString()));
-    if(!hist.length){
-      body.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;font-size:12px">Nenhuma simulação ISSQN salva.<br><span style="font-size:11px">Use "💾 Salvar Simulação" no módulo ISSQN.</span></div>';
-      return;
-    }
-    body.innerHTML='';
-    hist.slice(0,100).forEach(function(item){
-      const ident = item.id || item.docId;
-      const card=document.createElement('div');
-      card.className='cli-card';
-      card.style.cssText='padding:.875rem;margin-bottom:.625rem';
-      const info=document.createElement('div');
-      info.innerHTML=
-        '<div class="cli-name">'+(item.contratante||'Sem nome')+'</div>'+
-        '<div class="cli-meta" style="margin-top:3px">'+(item.natureza||'')+'</div>'+
-        '<div class="cli-meta" style="margin-top:2px"><span style="color:var(--gold-l)">ISSQN: '+(item.issqn||'—')+'</span>'+(item.competencia?' · '+item.competencia:'')+'</div>'+
-        '<div style="font-size:10px;color:var(--muted);margin-top:3px">'+(item.data||'')+'</div>';
-      const acoes=document.createElement('div');
-      acoes.style.cssText='margin-top:.625rem;display:flex;gap:6px;flex-wrap:wrap';
-      const mkBtn=function(txt,css,fn){
-        const b=document.createElement('button');
-        b.textContent=txt;
-        b.style.cssText=css+'font-family:var(--sans);font-size:11px;padding:4px 10px;border-radius:5px;cursor:pointer;';
-        b.addEventListener('click',fn);
-        return b;
-      };
-      acoes.appendChild(mkBtn('Carregar','background:var(--accent-dim);border:1px solid rgba(59,130,246,.2);color:var(--accent2);',function(){if(typeof window.carregarHistIssqn==='function')window.carregarHistIssqn(ident);}));
-      acoes.appendChild(mkBtn('📄 PDF','background:var(--green-dim);border:1px solid rgba(16,185,129,.2);color:var(--green2);',function(){if(typeof window.pdfHistIssqn==='function')window.pdfHistIssqn(ident);}));
-      acoes.appendChild(mkBtn('🗑 Excluir','background:var(--red-dim);border:1px solid rgba(239,68,68,.2);color:var(--red);',function(){if(typeof window.excluirHistIssqn==='function')window.excluirHistIssqn(ident,this);}));
-      card.appendChild(info);
-      card.appendChild(acoes);
-      body.appendChild(card);
+  window.renderNovoCliente = function renderNovoClienteProfissional(){
+    const body = q('cp-body'); if(!body) return;
+    body.innerHTML = html`
+      <div style="display:flex;flex-direction:column;gap:.8rem">
+        <div style="font-size:12px;color:var(--muted)">Cadastre um cliente manualmente. Ele ficará disponível no ISSQN, no INSS e na barra lateral.</div>
+        <input id="novo-nome" type="text" placeholder="Nome *" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 12px;color:var(--text);font:inherit;outline:none;width:100%">
+        <input id="novo-cpfcnpj" type="text" placeholder="CPF / CNPJ" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 12px;color:var(--text);font:inherit;outline:none;width:100%">
+        <div style="display:grid;grid-template-columns:1fr 80px;gap:.65rem">
+          <input id="novo-cidade" type="text" placeholder="Cidade" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 12px;color:var(--text);font:inherit;outline:none;width:100%">
+          <input id="novo-uf" type="text" maxlength="2" placeholder="UF" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 12px;color:var(--text);font:inherit;outline:none;width:100%">
+        </div>
+        <input id="novo-endereco" type="text" placeholder="Endereço" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 12px;color:var(--text);font:inherit;outline:none;width:100%">
+        <input id="novo-processo" type="text" placeholder="Processo / Identificação" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 12px;color:var(--text);font:inherit;outline:none;width:100%">
+        <input id="novo-telefone" type="text" placeholder="Telefone" style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:10px 12px;color:var(--text);font:inherit;outline:none;width:100%">
+        <div id="novo-msg" style="min-height:16px;font-size:12px;color:var(--red)"></div>
+        <button id="novo-salvar-btn" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:var(--r2);padding:11px 14px;font:inherit;font-weight:600;cursor:pointer">Salvar cliente</button>
+      </div>`;
+    q('novo-salvar-btn')?.addEventListener('click', async ()=>{
+      const client = normalizeClient({
+        nome: q('novo-nome')?.value,
+        cpfcnpj: q('novo-cpfcnpj')?.value,
+        cidade: q('novo-cidade')?.value,
+        uf: q('novo-uf')?.value,
+        endereco: q('novo-endereco')?.value,
+        processo: q('novo-processo')?.value,
+        telefone: q('novo-telefone')?.value,
+        origem: 'manual'
+      });
+      if(!client.nome){ q('novo-msg').textContent='Informe o nome do cliente.'; return; }
+      upsertLocalClient(client);
+      persistRemoteClient(client);
+      if(window.showToast) window.showToast(`✓ Cliente salvo: ${client.nome}`);
+      if(typeof window.switchPanelTab==='function') window.switchPanelTab('clientes');
     });
   };
 
-  window.pdfHistIssqn = function(id){
-    try{
-      let hist = lsGet(LS_ISSQN, []);
-      let item = hist.find(h => String(h.id)===String(id) || String(h.docId||'')===String(id));
-      if(!item && window.S?.historico){
-        item = (S.historico||[]).find(h => String(h.id)===String(id));
-      }
-      if(!item){ if(window.showToast) showToast('Simulação não encontrada.'); return; }
-      if(typeof window.abrirJanelaRelatorio==='function' && typeof window.montarHtmlRelatorioISSQN==='function'){
-        abrirJanelaRelatorio('Relatório ISSQN', montarHtmlRelatorioISSQN(item));
-      } else {
-        if(window.showToast) showToast('Erro: função de relatório não disponível.');
-      }
-    }catch(e){
-      if(window.showToast) showToast('Erro ao gerar PDF: '+e.message);
+  async function mergedInssSims(){
+    let list = Array.isArray(getLS(LS_INSS, [])) ? getLS(LS_INSS, []) : [];
+    if(window._user && window.FB){
+      try{
+        const qy = window.FB.query(window.FB.col(window.getSimCollection('inss')), window.FB.where('uid','==',window._user.uid));
+        const snap = await window.FB.getDocs(qy);
+        const remote=[];
+        snap.forEach(doc => remote.push({ docId: doc.id, ...doc.data() }));
+        list = mergeUniqueByKey([...list, ...remote], 'sim');
+      }catch(_){ }
     }
+    return list.sort((a,b)=> Number(b.id||0) - Number(a.id||0));
+  }
+
+  async function mergedIssqnSims(){
+    let list = Array.isArray(getLS(LS_ISSQN, [])) ? getLS(LS_ISSQN, []) : [];
+    if(window._user && window.FB){
+      try{
+        const qy = window.FB.query(window.FB.col(window.getSimCollection('issqn')), window.FB.where('uid','==',window._user.uid));
+        const snap = await window.FB.getDocs(qy);
+        const remote=[];
+        snap.forEach(doc => remote.push({ docId: doc.id, ...doc.data() }));
+        list = mergeUniqueByKey([...list, ...remote], 'sim');
+      }catch(_){ }
+    }
+    return list.sort((a,b)=> Number(b.id||0) - Number(a.id||0));
+  }
+
+  async function renderInssList(target){
+    const sims = await mergedInssSims();
+    if(!sims.length){
+      target.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1.75rem;font-size:12px">Nenhuma simulação INSS salva ainda.</div>';
+      return;
+    }
+    target.innerHTML = sims.map(r => {
+      const c=r.contratante||{}, o=r.obra||{}, e2=r.etapa2||{}, e3=r.etapa3||{};
+      const rid = String(r.id||r.docId||'');
+      return html`<div class="cli-card" style="padding:.9rem">
+        <div class="cli-name">${c.nome || r.titulo || 'Simulação sem nome'}</div>
+        <div class="cli-meta" style="margin-top:4px">${[o.uf,o.destNome||o.dest,o.compLabel||o.comp].filter(Boolean).join(' · ') || 'Sem identificação'}</div>
+        <div class="cli-meta" style="margin-top:3px">INSS sem vinc.: ${e2.inss_a||'—'} · INSS pagar: ${e3.ipg||e3.inss_pagar_a||'—'}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">${r.dataSimulacao || ''}</div>
+        <div class="cli-actions" style="margin-top:.65rem;display:flex;gap:6px;flex-wrap:wrap">
+          <button class="cli-btn primary" data-inss-load="${rid}">Carregar</button>
+          <button class="cli-btn primary" style="border-color:rgba(16,185,129,.35);color:var(--green2)" data-inss-pdf="${rid}">PDF</button>
+          <button class="cli-btn danger" data-inss-del="${rid}">Excluir</button>
+        </div>
+      </div>`;
+    }).join('');
+    target.querySelectorAll('[data-inss-load]').forEach(btn => btn.addEventListener('click', ()=> window.carregarRelatorio(btn.getAttribute('data-inss-load'))));
+    target.querySelectorAll('[data-inss-pdf]').forEach(btn => btn.addEventListener('click', ()=> window.gerarPDFSimulacao(btn.getAttribute('data-inss-pdf'))));
+    target.querySelectorAll('[data-inss-del]').forEach(btn => btn.addEventListener('click', ()=> window.excluirRelatorio(btn.getAttribute('data-inss-del'), btn)));
+  }
+
+  window.renderRelatorios = async function renderRelatoriosProfissional(){
+    const body = q('cp-body'); if(!body) return;
+    body.innerHTML = '<div id="cp-inss-lista"></div>';
+    await renderInssList(q('cp-inss-lista'));
   };
 
-  window.carregarHistIssqn = function carregarHistIssqnPatched(id){
+  async function renderIssqnList(target){
+    const hist = await mergedIssqnSims();
+    if(!hist.length){
+      target.innerHTML = '<div style="text-align:center;color:var(--muted);padding:1.75rem;font-size:12px">Nenhuma simulação ISSQN salva ainda.</div>';
+      return;
+    }
+    target.innerHTML = hist.map(item => {
+      const iid = String(item.id||item.docId||'');
+      return html`<div class="cli-card" style="padding:.9rem">
+        <div class="cli-name">${item.contratante || 'Simulação sem nome'}</div>
+        <div class="cli-meta" style="margin-top:4px">${item.natureza || ''}</div>
+        <div class="cli-meta" style="margin-top:3px">ISSQN: ${item.issqn || '—'}${item.competencia ? ' · ' + item.competencia : ''}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">${item.data || ''}</div>
+        <div class="cli-actions" style="margin-top:.65rem;display:flex;gap:6px;flex-wrap:wrap">
+          <button class="cli-btn primary" data-issqn-load="${iid}">Carregar</button>
+          <button class="cli-btn primary" style="border-color:rgba(16,185,129,.35);color:var(--green2)" data-issqn-pdf="${iid}">PDF</button>
+          <button class="cli-btn danger" data-issqn-del="${iid}">Excluir</button>
+        </div>
+      </div>`;
+    }).join('');
+    target.querySelectorAll('[data-issqn-load]').forEach(btn => btn.addEventListener('click', ()=> window._issqnPanelLoad(btn.getAttribute('data-issqn-load'))));
+    target.querySelectorAll('[data-issqn-pdf]').forEach(btn => btn.addEventListener('click', ()=> window._issqnPanelPdf(btn.getAttribute('data-issqn-pdf'))));
+    target.querySelectorAll('[data-issqn-del]').forEach(btn => btn.addEventListener('click', ()=> window.excluirHistIssqn(btn.getAttribute('data-issqn-del'), btn)));
+  }
+
+  window.renderHistIssqn = async function renderHistIssqnProfissional(){
+    const body = q('cp-body'); if(!body) return;
+    body.innerHTML = '<div id="cp-issqn-lista"></div>';
+    await renderIssqnList(q('cp-issqn-lista'));
+  };
+
+  const originalSalvarRelatorio = window.salvarRelatorio;
+  window.salvarRelatorio = async function salvarRelatorioProfissional(){
+    let clientName = '';
     try{
-      let hist = lsGet(LS_ISSQN, []);
-      let item = hist.find(h => String(h.id)===String(id) || String(h.docId||'')===String(id));
-      if(!item && window.S?.historico){
-        item = (S.historico||[]).find(h => String(h.id)===String(id) || String(h.docId||'')===String(id));
-      }
-      if(!item){ alert('Simulação não encontrada.'); return; }
-      window.switchModule?.('issqn');
+      const savedClient = await saveSharedClientFromModule('inss');
+      clientName = savedClient?.nome || '';
+    }catch(_){ }
+    if(typeof originalSalvarRelatorio === 'function') await originalSalvarRelatorio.apply(this, arguments);
+    if(typeof window.showToast === 'function'){
+      const baseName = (q('c_nome')?.value || clientName || '').trim();
       setTimeout(()=>{
-        const set=(eid,v)=>{ const e=window.el?.(eid); if(e) e.value=v||''; };
-        set('nome', item.contratante); set('documento', item.documento); set('cidade', item.cidade); set('endereco', item.endereco); set('identificacao', item.identificacao);
-        if(item.uf) window.S.ufCont = item.uf;
-        if(item.natureza) window.S.natureza = item.natureza;
-        if(item.ufSinapi) window.S.ufSinapi = item.ufSinapi;
-        if(item.competencia) window.S.comp = item.competencia;
-        if(item.area) set('area', String(item.area).replace(/[^\d,.-]/g,'').replace(',','.'));
-        if(item.aliquota) set('aliquota', String(item.aliquota).replace('%','').replace(',','.'));
-        if(typeof window.updRes==='function') updRes();
-        window.closePanel?.();
-        window.showToast?.('✓ Simulação ISSQN carregada');
-      }, 200);
-    }catch(e){
-      alert('Erro ao carregar simulação ISSQN: ' + e.message);
+        window.showToast(baseName ? `✓ Simulação INSS salva: ${baseName}` : '✓ Simulação INSS salva com sucesso!');
+      }, 120);
     }
+    setTimeout(()=>{
+      renderInlineInssHistory();
+      if(q('tab-relatorios-inss')?.classList.contains('on')) window.renderRelatorios();
+    }, 100);
   };
 
-  window.excluirHistIssqn = async function excluirHistIssqnPatched(id,btn){
+  const originalSalvarIssqn = window.salvar;
+  window.salvar = async function salvarIssqnProfissional(){
+    let clientName = '';
+    try{
+      const savedClient = await saveSharedClientFromModule('issqn');
+      clientName = savedClient?.nome || '';
+    }catch(_){ }
+    if(typeof originalSalvarIssqn === 'function') await originalSalvarIssqn.apply(this, arguments);
+    if(typeof window.showToast === 'function'){
+      const baseName = (q('nome')?.value || clientName || '').trim();
+      window.showToast(baseName ? `✓ Simulação ISSQN salva: ${baseName}` : '✓ Simulação ISSQN salva com sucesso!');
+    }
+    setTimeout(()=>{
+      if(q('tab-relatorios-issqn')?.classList.contains('on')) window.renderHistIssqn();
+      renderInlineInssHistory();
+    }, 100);
+  };
+
+  window.excluirRelatorio = async function excluirRelatorioProfissional(id, btn){
     if(!confirm('Excluir esta simulação?')) return;
     const prev = btn ? btn.textContent : '';
     if(btn) btn.textContent='...';
     try{
-      const hist = lsGet(LS_ISSQN, []).filter(h => String(h.id)!==String(id) && String(h.docId||'')!==String(id));
-      lsSet(LS_ISSQN, hist);
-      if(window.S) S.historico = hist;
-      try{
-        if(window.FB && window._user && !String(id).startsWith('local-')){
-          await window.FB.deleteDoc(window.FB.doc(getSimCollection('issqn'), id));
-        }
-      }catch(_){}
-      window.renderHistIssqn?.();
+      setLS(LS_INSS, getLS(LS_INSS, []).filter(item => String(item.id)!==String(id) && String(item.docId||'')!==String(id)));
+      if(window._user && window.FB && !String(id).startsWith('local-')){
+        try{ await window.FB.deleteDoc(window.FB.doc(window.getSimCollection('inss'), id)); }catch(_){ }
+      }
+      if(typeof window.renderRelatorios==='function') window.renderRelatorios();
+      renderInlineInssHistory();
     }catch(e){
       alert('Erro: ' + e.message);
       if(btn) btn.textContent = prev || 'Excluir';
     }
   };
 
-  // Move save button in ISSQN to export bar and highlight it
-  function moveIssqnSaveButton(){
+  window.excluirHistIssqn = async function excluirHistIssqnProfissional(id, btn){
+    if(!confirm('Excluir esta simulação?')) return;
+    const prev = btn ? btn.textContent : '';
+    if(btn) btn.textContent='...';
     try{
-      const expBar = document.querySelector('.mod-issqn .exp-bar');
-      const saveBtn = document.querySelector('.mod-issqn .btn-p[onclick*="salvar()"]');
-      if(expBar && saveBtn){
-        saveBtn.classList.remove('btn-p');
-        saveBtn.classList.add('btn-exp','save-highlight');
-        saveBtn.style.marginLeft = 'auto';
-        if(!expBar.contains(saveBtn)) expBar.appendChild(saveBtn);
+      setLS(LS_ISSQN, getLS(LS_ISSQN, []).filter(item => String(item.id)!==String(id) && String(item.docId||'')!==String(id)));
+      if(window._user && window.FB && !String(id).startsWith('local-')){
+        try{ await window.FB.deleteDoc(window.FB.doc(window.getSimCollection('issqn'), id)); }catch(_){ }
       }
-    }catch(_){}
+      if(typeof window.renderHistIssqn==='function') window.renderHistIssqn();
+    }catch(e){
+      alert('Erro: ' + e.message);
+      if(btn) btn.textContent = prev || 'Excluir';
+    }
+  };
+
+  function ensureIssqnSaveClientButton(){
+    const expBar = document.querySelector('#mod-issqn .exp-bar');
+    if(!expBar || q('issqn-save-client-btn')) return;
+    const btn = document.createElement('button');
+    btn.id='issqn-save-client-btn';
+    btn.type='button';
+    btn.className='btn-exp';
+    btn.style.marginLeft='auto';
+    btn.textContent='Salvar cliente';
+    btn.addEventListener('click', ()=> window.salvarContratante());
+    expBar.appendChild(btn);
   }
 
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', moveIssqnSaveButton);
-  }else{
-    moveIssqnSaveButton();
+  function ensureInssInlineHistory(){
+    const module = q('mod-inss');
+    if(!module) return null;
+    let wrap = q('inss-history-inline-wrap');
+    if(wrap) return wrap;
+    wrap = document.createElement('section');
+    wrap.id = 'inss-history-inline-wrap';
+    wrap.style.cssText = 'margin-top:18px;border:1px solid var(--border);border-radius:16px;background:rgba(15,23,42,.35);padding:16px;display:flex;flex-direction:column;gap:12px';
+    wrap.innerHTML = '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><div style="font-size:13px;font-weight:700;color:var(--text)">Simulações registradas do INSS</div><div style="font-size:11px;color:var(--muted)">Histórico rápido do módulo para recarregar ou gerar PDF.</div></div><button type="button" class="cli-btn primary" id="inss-open-panel-btn">Abrir na barra lateral</button></div><div id="inss-history-inline-list"></div>';
+    module.querySelector('main')?.appendChild(wrap);
+    q('inss-open-panel-btn')?.addEventListener('click', ()=> window.openPanel?.('relatorios-inss'));
+    return wrap;
   }
-  window.addEventListener('load', moveIssqnSaveButton);
+
+  async function renderInlineInssHistory(){
+    ensureInssInlineHistory();
+    const listNode = q('inss-history-inline-list');
+    if(!listNode) return;
+    await renderInssList(listNode);
+  }
+
+  function installSafePanel(){
+    window.openPanel = function(tab){
+      const panel = q('client-panel'); const overlay = q('panel-overlay');
+      panel?.classList.add('on'); overlay?.classList.add('on');
+      try{ if(typeof window.updatePanelContext==='function') window.updatePanelContext(); }catch(_){ }
+      if(typeof window.switchPanelTab==='function') window.switchPanelTab(tab || 'clientes');
+    };
+    window.closePanel = function(){ q('client-panel')?.classList.remove('on'); q('panel-overlay')?.classList.remove('on'); };
+    window.switchPanelTab = function(tab){
+      ['clientes','relatorios-inss','relatorios-issqn','novo'].forEach(t=> q('tab-'+t)?.classList.toggle('on', t===tab));
+      const body = q('cp-body'); if(!body) return;
+      body.innerHTML = '<div style="text-align:center;color:var(--muted);padding:2rem;font-size:12px">Carregando...</div>';
+      const map = {
+        'clientes': window.renderClientes,
+        'relatorios-inss': window.renderRelatorios,
+        'relatorios-issqn': window.renderHistIssqn,
+        'novo': window.renderNovoCliente,
+      };
+      try{ (map[tab] || window.renderClientes)?.(); }catch(e){ body.innerHTML = '<div style="color:var(--red);padding:1rem;font-size:12px">Erro: '+e.message+'</div>'; }
+    };
+  }
+
+  function bootstrap(){
+    installSafePanel();
+    ensureIssqnSaveClientButton();
+    renderInlineInssHistory();
+    if(typeof window.switchPanelTab==='function' && q('tab-clientes')?.classList.contains('on')){
+      // lazy, only when panel already open
+      if(q('client-panel')?.classList.contains('on')) window.switchPanelTab('clientes');
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootstrap);
+  else bootstrap();
+  window.addEventListener('load', bootstrap);
 })();
 </script>
 
+<script>
+(function(){
+  const q = (id)=>document.getElementById(id);
+  const DRAFT_INSS = 'draft_inss_profissional_v1';
+  const DRAFT_ISSQN = 'draft_issqn_profissional_v1';
+  const BACKUP_KEY_LIST = ['clientes_compartilhados','inss_simulacoes','issqn_hist', DRAFT_INSS, DRAFT_ISSQN];
+  const AUTOSAVE_MS = 900;
+  let autosaveTimerInss = null;
+  let autosaveTimerIssqn = null;
+  let backupInputBound = false;
+
+  function safeJSON(value, fallback){ try{ const parsed = JSON.parse(value); return parsed ?? fallback; }catch(_){ return fallback; } }
+  function lsGet(key, fallback){ try{ return safeJSON(localStorage.getItem(key), fallback); }catch(_){ return fallback; } }
+  function lsSet(key, value){ try{ localStorage.setItem(key, JSON.stringify(value)); return true; }catch(_){ return false; } }
+  function nowIso(){ return new Date().toISOString(); }
+  function markSync(label){
+    const nodes = document.querySelectorAll('[data-sync-status]');
+    nodes.forEach(node=>{ node.textContent = label; });
+  }
+  function toast(msg){ if(typeof window.showToast === 'function') window.showToast(msg); }
+  function ensureSyncBadge(moduleId){
+    const mod = q(moduleId); if(!mod) return;
+    if(mod.querySelector('[data-sync-status]')) return;
+    const target = mod.querySelector('.exp-bar') || mod.querySelector('.card') || mod;
+    const badge = document.createElement('div');
+    badge.setAttribute('data-sync-status','1');
+    badge.style.cssText='font-size:11px;color:var(--muted);margin-top:6px';
+    badge.textContent='Rascunho pronto';
+    target.parentNode && target.parentNode.insertBefore(badge, target.nextSibling);
+  }
+
+  function collectInssDraft(){
+    try{
+      const ids = ['c_nome','c_cpfcnpj','c_cidade','c_endereco','c_processo','c_data','uf','dest','tipo','ap','ac','ad','vau','comp','perc_equiv_a','pmo_val_a','fator_social_a','pmo_val_b','c_rmt_a','c_rmt_b','c_rec'];
+      const fields = {};
+      ids.forEach(id=>{ fields[id] = q(id)?.value ?? ''; });
+      const remuneracoes = [];
+      document.querySelectorAll('#monthly-rows .mrow').forEach(row=>{
+        remuneracoes.push({
+          mes: row.querySelector('input[type=month]')?.value || '',
+          rem: row.querySelector('.rem-inp')?.value || '',
+          icm: row.querySelector('.icm-inp')?.value || '',
+          multa: row.querySelector('.multa-inp')?.value || '',
+          juros: row.querySelector('.juros-inp')?.value || '',
+          maed: row.querySelector('.maed-inp')?.value || ''
+        });
+      });
+      return { version:1, updatedAt: nowIso(), fields, remuneracoes, usaConcreto: !!window.usaConc };
+    }catch(_){ return null; }
+  }
+
+  function restoreInssDraft(force){
+    const draft = lsGet(DRAFT_INSS, null); if(!draft || !draft.fields) return false;
+    const hasMain = (q('c_nome')?.value || q('ap')?.value || q('comp')?.value || '').trim();
+    if(!force && hasMain) return false;
+    Object.entries(draft.fields).forEach(([id,val])=>{ const el=q(id); if(el) el.value = val ?? ''; });
+    if(typeof draft.usaConcreto === 'boolean' && typeof window.setConcreto === 'function') window.setConcreto(draft.usaConcreto);
+    if(q('monthly-rows')){
+      q('monthly-rows').innerHTML='';
+      try{ window.rowC = 0; }catch(_){ }
+      if(Array.isArray(draft.remuneracoes) && draft.remuneracoes.length && typeof window.addRow === 'function'){
+        draft.remuneracoes.forEach(item=> window.addRow({ mes:item.mes||'', rem:item.rem||'0', icm:item.icm||'0', multa:item.multa||75, juros:item.juros||'0', maed:item.maed||'0' }));
+      }else if(typeof window.addRow === 'function' && !q('monthly-rows')?.children.length){
+        window.addRow({multa:75});
+      }
+    }
+    try{ if(typeof window.atualizarBadgeComp === 'function') window.atualizarBadgeComp(); }catch(_){ }
+    try{ if(typeof window.calcular === 'function') window.calcular(); }catch(_){ }
+    try{ if(typeof window.calcCom === 'function') window.calcCom(); }catch(_){ }
+    markSync('Rascunho INSS restaurado');
+    return true;
+  }
+
+  function autosaveInss(silent){
+    const draft = collectInssDraft();
+    if(!draft) return;
+    lsSet(DRAFT_INSS, draft);
+    markSync(silent ? 'Rascunho INSS salvo automaticamente' : 'Rascunho INSS salvo');
+  }
+
+  function collectIssqnDraft(){
+    try{
+      const ids = ['nome','documento','cidade','endereco','identificacao','area','aliquota'];
+      const fields = {};
+      ids.forEach(id=>{ fields[id] = q(id)?.value ?? ''; });
+      const state = (typeof window.S === 'object' && window.S) ? {
+        natureza: window.S.natureza,
+        ufCont: window.S.ufCont,
+        ufSinapi: window.S.ufSinapi,
+        comp: window.S.comp,
+        pontConf: window.S.pontConf,
+        pontPrev: window.S.pontPrev,
+        escolhas: window.S.escolhas || {}
+      } : {};
+      return { version:1, updatedAt: nowIso(), fields, state };
+    }catch(_){ return null; }
+  }
+
+  function restoreIssqnDraft(force){
+    const draft = lsGet(DRAFT_ISSQN, null); if(!draft || !draft.fields) return false;
+    const hasMain = (q('nome')?.value || q('area')?.value || '').trim();
+    if(!force && hasMain) return false;
+    Object.entries(draft.fields).forEach(([id,val])=>{ const el=q(id); if(el) el.value = val ?? ''; });
+    if(typeof window.S === 'object' && window.S && draft.state){
+      Object.assign(window.S, draft.state);
+      try{
+        if(typeof window.loadSinapi === 'function') window.loadSinapi();
+        if(typeof window.updRes === 'function') window.updRes();
+        if(typeof window.buildPont === 'function' && q('pontPanel')?.classList.contains('open')) window.buildPont();
+      }catch(_){ }
+    }
+    markSync('Rascunho ISSQN restaurado');
+    return true;
+  }
+
+  function autosaveIssqn(silent){
+    const draft = collectIssqnDraft();
+    if(!draft) return;
+    lsSet(DRAFT_ISSQN, draft);
+    markSync(silent ? 'Rascunho ISSQN salvo automaticamente' : 'Rascunho ISSQN salvo');
+  }
+
+  function bindAutosave(){
+    ensureSyncBadge('mod-inss');
+    ensureSyncBadge('mod-issqn');
+    const inss = q('mod-inss');
+    const issqn = q('mod-issqn');
+    if(inss && !inss.dataset.autosaveBound){
+      inss.dataset.autosaveBound='1';
+      inss.addEventListener('input', ()=>{ clearTimeout(autosaveTimerInss); autosaveTimerInss = setTimeout(()=>autosaveInss(true), AUTOSAVE_MS); }, true);
+      inss.addEventListener('change', ()=>{ clearTimeout(autosaveTimerInss); autosaveTimerInss = setTimeout(()=>autosaveInss(true), 150); }, true);
+    }
+    if(issqn && !issqn.dataset.autosaveBound){
+      issqn.dataset.autosaveBound='1';
+      issqn.addEventListener('input', ()=>{ clearTimeout(autosaveTimerIssqn); autosaveTimerIssqn = setTimeout(()=>autosaveIssqn(true), AUTOSAVE_MS); }, true);
+      issqn.addEventListener('change', ()=>{ clearTimeout(autosaveTimerIssqn); autosaveTimerIssqn = setTimeout(()=>autosaveIssqn(true), 150); }, true);
+    }
+  }
+
+  function makeBackupObject(){
+    return {
+      app: 'sistema-profissional',
+      version: 1,
+      exportedAt: nowIso(),
+      data: BACKUP_KEY_LIST.reduce((acc,key)=>{ acc[key] = lsGet(key, null); return acc; }, {})
+    };
+  }
+
+  function exportSystemBackup(){
+    const backup = makeBackupObject();
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+    a.href = URL.createObjectURL(blob);
+    a.download = `backup_sistema_${stamp}.json`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+    toast('✓ Backup exportado com sucesso!');
+  }
+
+  function importSystemBackupFromObject(obj){
+    if(!obj || obj.app !== 'sistema-profissional' || !obj.data) throw new Error('Arquivo de backup inválido.');
+    BACKUP_KEY_LIST.forEach(key=>{
+      if(Object.prototype.hasOwnProperty.call(obj.data, key) && obj.data[key] !== undefined){
+        lsSet(key, obj.data[key]);
+      }
+    });
+    restoreInssDraft(true);
+    restoreIssqnDraft(true);
+    try{ if(typeof window.renderClientes === 'function' && q('tab-clientes')?.classList.contains('on')) window.renderClientes(); }catch(_){ }
+    try{ if(typeof window.renderRelatorios === 'function' && q('tab-relatorios-inss')?.classList.contains('on')) window.renderRelatorios(); }catch(_){ }
+    try{ if(typeof window.renderHistIssqn === 'function' && q('tab-relatorios-issqn')?.classList.contains('on')) window.renderHistIssqn(); }catch(_){ }
+    try{ if(typeof window.rendHist === 'function') window.rendHist(); }catch(_){ }
+    try{ if(typeof window.calcular === 'function') window.calcular(); }catch(_){ }
+    try{ if(typeof window.calcCom === 'function') window.calcCom(); }catch(_){ }
+    try{ if(typeof window.updRes === 'function') window.updRes(); }catch(_){ }
+    markSync('Backup restaurado com sucesso');
+    toast('✓ Backup restaurado com sucesso!');
+  }
+
+  function ensureBackupInput(){
+    let inp = q('system-backup-input');
+    if(inp) return inp;
+    inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'application/json,.json';
+    inp.id = 'system-backup-input';
+    inp.style.display='none';
+    document.body.appendChild(inp);
+    inp.addEventListener('change', async (ev)=>{
+      const file = ev.target.files && ev.target.files[0];
+      if(!file) return;
+      try{
+        const text = await file.text();
+        importSystemBackupFromObject(JSON.parse(text));
+      }catch(e){
+        alert('Falha ao restaurar backup: ' + e.message);
+      }finally{
+        inp.value='';
+      }
+    });
+    return inp;
+  }
+
+  function openBackupPicker(){ ensureBackupInput().click(); }
+
+  function appendSecuritySection(){
+    const body = q('cp-body');
+    if(!body || q('backup-tools-section')) return;
+    const box = document.createElement('div');
+    box.id = 'backup-tools-section';
+    box.style.cssText = 'margin-top:14px;padding:12px;border:1px solid var(--border);border-radius:14px;background:rgba(15,23,42,.32);display:flex;flex-direction:column;gap:10px';
+    box.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="font-size:12px;font-weight:700;color:var(--text)">Segurança e backup</div>
+        <div style="font-size:11px;color:var(--muted)">Exporte uma cópia completa dos clientes, simulações e rascunhos. Use a restauração quando precisar recuperar o sistema.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" id="btn-export-backup" style="background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:var(--green2);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;font-family:inherit">Exportar backup</button>
+        <button type="button" id="btn-import-backup" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);color:var(--accent2);border-radius:8px;padding:8px 12px;font-size:12px;cursor:pointer;font-family:inherit">Restaurar backup</button>
+      </div>
+      <div style="font-size:10px;color:var(--muted)">Dica: faça um backup antes de grandes alterações ou no fim do expediente.</div>`;
+    body.appendChild(box);
+    q('btn-export-backup')?.addEventListener('click', exportSystemBackup);
+    q('btn-import-backup')?.addEventListener('click', openBackupPicker);
+  }
+
+  const originalRenderNovoCliente = window.renderNovoCliente;
+  if(typeof originalRenderNovoCliente === 'function'){
+    window.renderNovoCliente = function renderNovoClienteSeguro(){
+      originalRenderNovoCliente.apply(this, arguments);
+      appendSecuritySection();
+      ensureBackupInput();
+    };
+  }
+
+  const originalGoStep = window.goStep;
+  if(typeof originalGoStep === 'function'){
+    window.goStep = function goStepSeguro(n){
+      const out = originalGoStep.apply(this, arguments);
+      if(Number(n) === 3) setTimeout(()=>autosaveInss(true), 50);
+      return out;
+    };
+  }
+
+  const originalSalvarRelatorio = window.salvarRelatorio;
+  if(typeof originalSalvarRelatorio === 'function'){
+    window.salvarRelatorio = async function salvarRelatorioSeguro(){
+      const result = await originalSalvarRelatorio.apply(this, arguments);
+      autosaveInss(true);
+      return result;
+    };
+  }
+
+  const originalSalvarIssqn = window.salvar;
+  if(typeof originalSalvarIssqn === 'function'){
+    window.salvar = async function salvarIssqnSeguro(){
+      const result = await originalSalvarIssqn.apply(this, arguments);
+      autosaveIssqn(true);
+      return result;
+    };
+  }
+
+  const originalSalvarNovoCliente = window.salvarNovoClienteUnificado;
+  if(typeof originalSalvarNovoCliente === 'function'){
+    window.salvarNovoClienteUnificado = async function salvarNovoClienteSeguro(){
+      const result = await originalSalvarNovoCliente.apply(this, arguments);
+      ensureBackupInput();
+      return result;
+    };
+  }
+
+  const originalSwitchModule = window.switchModule;
+  if(typeof originalSwitchModule === 'function'){
+    window.switchModule = function switchModuleSeguro(mod){
+      const out = originalSwitchModule.apply(this, arguments);
+      setTimeout(()=>{
+        if(mod === 'inss') restoreInssDraft(false);
+        if(mod === 'issqn') restoreIssqnDraft(false);
+        bindAutosave();
+      }, 80);
+      return out;
+    };
+  }
+
+  function applyMobileImprovements(){
+    if(q('security-mobile-style')) return;
+    const style = document.createElement('style');
+    style.id = 'security-mobile-style';
+    style.textContent = `
+      @media (max-width: 768px){
+        #mod-inss .exp-bar, #mod-issqn .exp-bar{display:flex;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
+        #mod-inss .exp-bar button, #mod-issqn .exp-bar button{flex:0 0 auto;white-space:nowrap}
+        #client-panel.on{width:min(100vw, 420px)}
+        #inss-history-inline-wrap{padding:12px !important;border-radius:12px !important}
+        [data-sync-status]{padding-bottom:8px}
+      }`;
+    document.head.appendChild(style);
+  }
+
+  function bootstrapSecurityLayer(){
+    ensureBackupInput();
+    bindAutosave();
+    applyMobileImprovements();
+    setTimeout(()=>{ restoreInssDraft(false); restoreIssqnDraft(false); }, 120);
+  }
+
+  window.exportSystemBackup = exportSystemBackup;
+  window.openBackupPicker = openBackupPicker;
+  window.importSystemBackupFromObject = importSystemBackupFromObject;
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootstrapSecurityLayer);
+  else bootstrapSecurityLayer();
+  window.addEventListener('load', bootstrapSecurityLayer);
+})();
+</script>
 </body>
 </html>
